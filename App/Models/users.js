@@ -14,6 +14,11 @@ let main = (Connect) => {
 			type: String,
 			required: true
 		},
+		balance : {
+			type : Number,
+			default : 0,
+			required : true
+		},
 		disabled: {
 			type: Boolean,
 			default: false
