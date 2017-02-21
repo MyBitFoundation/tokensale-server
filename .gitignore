@@ -59,4 +59,4 @@ typings/
 # dotenv environment variables file
 .env
 
-config/mian.json
+config/main.json
