@@ -1,0 +1,9 @@
+{
+	"db": {
+		"host": "127.0.0.1",
+		"port": "27017",
+		"database": "608_mybit"
+	},
+	"disableRaven": false,
+	"app_api_host": "60800"
+}
