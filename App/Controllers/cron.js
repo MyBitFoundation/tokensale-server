@@ -22,6 +22,19 @@ class CronController {
     }
 
     static handleDeposits(){
+        let endDate = Date.parse(config['deadline']),
+            currentDate = Date.now(),
+            dayTimestamp = 60 / 60 / 24 / 1000,
+            tokenPrice;
+
+        if (endDate - currentDate > 3 * 7 * dayTimestamp){
+            tokenPrice = 100;
+        } else if (endDate - currentDate > 7 * dayTimestamp){
+            tokenPrice = 150;
+        } else {
+            tokenPrice = 250;
+        }
+
         async.waterfall([
             (cb)=>{
                 Models.depositWallets.find({
@@ -51,21 +64,9 @@ class CronController {
                             if(result.status != 'complete'){
                                 return cb(null, null);
                             }
+
                             let incomeETH = parseFloat(result.outgoingCoin),
-                                endDate = Date.parse(config['deadline']),
-                                currentDate = Date.now(),
-                                dayTimestamp = 60 / 60 / 24 / 1000,
-                                tokenPrice;
-
-                            if (endDate - currentDate > 3 * 7 * dayTimestamp){
-                                tokenPrice = 100;
-                            } else if (endDate - currentDate > 7 * dayTimestamp){
-                                tokenPrice = 150;
-                            } else {
-                                tokenPrice = 250;
-                            }
-
-                            let fundAmount = incomeETH * tokenPrice;
+                                fundAmount = incomeETH * tokenPrice;
 
                             logger.info(`New executed transaction found. Deposit wallet id: ${wallet._id}`);
                             wallet.executedAt = Date.now();

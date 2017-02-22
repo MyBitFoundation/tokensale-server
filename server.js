@@ -5,10 +5,7 @@ let async = require('async'),
 	dir = require('node-dir'),
 	fs = require('fs'),
 	Raven = require('raven'),
-	moment = require('moment'),
-    BigNumber = require('big-number');
-
-BigNumber.config({ DECIMAL_PLACES: 10, ROUNDING_MODE: 4 });
+	moment = require('moment');
 
 global.ConfigPath = __dirname + '/config/main.json';
 
