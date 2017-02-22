@@ -4,7 +4,8 @@
 let request = require('request'),
     async = require('async'),
     logger = require('log4js').getLogger('Crowdsale Controller'),
-    config = require(ConfigPath);
+    config = require(ConfigPath),
+    moment = require('moment');
 
 let Controllers = getControllers(),
     Models = getModels();
@@ -17,22 +18,13 @@ class CrowdsaleController {
 
     deposit(callback, data){
         let { currency } = data._post,
-            user = data.req.user,
-            userId;
+            userId = data.req.user._id;
 
         if(!currency) {
             return callback('Currency is required');
         }
 
         async.waterfall([
-            (cb)=>{
-                Models.users.findOne({
-                    email: user.email.toLowerCase()
-                }, (err, user)=>{
-                    userId = user._id;
-                    cb();
-                });
-            },
             (cb)=>{
                 Models.depositWallets.findOne({
                     userId: userId,
@@ -53,11 +45,48 @@ class CrowdsaleController {
         ], (err, wallet)=>{
             if(err) return GlobalError('20012012', err, callback);
 
-            callback(null, {
-                wallet  : wallet.deposit,
-                type    : wallet.depositType.toUpperCase()
-            });
+            let response = {
+                address     : wallet.deposit,
+                type        : wallet.depositType.toUpperCase()
+            };
+
+            if(response.type == 'BTS'){
+                response.memo = wallet.extraInfo;
+            } else if(response.type == 'XMR'){
+                response.paymentId = wallet.extraInfo;
+            }
+
+            callback(null, response);
         });
+    }
+
+    transactions(callback, data){
+        let userId = data.req.user._id,
+            sort = -1;
+
+        if(data._get.sort && data._get.sort == 1 || data._get.sort == -1){
+            sort = data._get.sort;
+        }
+
+        Models.depositWallets.find({
+            userId: userId,
+            executedAt : {$ne:null}
+        }, null, { sort : { executedAt : sort}}, (err, wallets)=>{
+            let transactions = wallets.map((wallet)=>{
+                return {
+                    date          : moment(wallet.executedAt).format('YYYY-MM-DD HH:mm:ss'),
+                    sentAmount    : parseFloat(wallet.transaction.incomingCoin),
+                    sentCoinType  : wallet.transaction.incomingType,
+                    transactionId : wallet.transaction.transaction,
+                    address       : wallet.transaction.withdraw,
+                    amount        : parseFloat(wallet.transaction.fundAmount),
+                    rate          : parseFloat(wallet.transaction.incomingCoin / wallet.transaction.fundAmount)
+                };
+            });
+
+            callback(null, transactions);
+        });
+
     }
 
     static createTransactionWallet(currency, userId, callback){
@@ -83,15 +112,16 @@ class CrowdsaleController {
                 });
             },
             (response, cb)=>{
-                let newWallet = {
-                    userId : userId,
-                    orderId : response.orderId,
-                    deposit: response.deposit,
-                    depositType: response.depositType.toUpperCase(),
-                    extraInfo: response.public || response.xrpDestTag,
-                    executed : false,
-                    executedAt : null
-                };
+                let coin = response.depositType.toUpperCase(),
+                    newWallet = {
+                        userId : userId,
+                        orderId : response.orderId,
+                        deposit: (coin == 'XMR' || coin == 'BTS') ? response.sAddress : response.deposit,
+                        depositType: coin,
+                        extraInfo: (coin == 'XMR' || coin == 'BTS') ? response.deposit : null,
+                        executed : false,
+                        executedAt : null
+                    };
 
                 Models.depositWallets.create(newWallet, err=>{
                     if(err) return cb('Insert deposit wallet error');

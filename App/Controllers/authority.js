@@ -90,8 +90,11 @@ let AuthorityController = {
 		cb();
 	},
 	me(cb, data) {
+		let balance = data.req.user.balance ? parseFloat(data.req.user.balance) : 0;
+
 		cb(null, {
 			email: data.req.user.email,
+            balance,
 			lastLoginDate: data.req.user.lastLoginDate
 		});
 	}

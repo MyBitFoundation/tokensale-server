@@ -4,12 +4,13 @@
 let main = (Connect) => {
     let TransactionSchema = new Connect.Schema({
         withdraw : String,
-        incomingCoin : String,
+        incomingCoin : Number,
         incomingType : String,
         address : String,
-        outgoingCoin : String,
+        outgoingCoin : Number,
         outgoingType : String,
-        transaction : String
+        transaction : String,
+        fundAmount : Number
     });
 
     let Schema = new Connect.Schema({

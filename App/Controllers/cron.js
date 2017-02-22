@@ -51,6 +51,21 @@ class CronController {
                             if(result.status != 'complete'){
                                 return cb(null, null);
                             }
+                            let incomeETH = parseFloat(result.outgoingCoin),
+                                endDate = Date.parse(config['deadline']),
+                                currentDate = Date.now(),
+                                dayTimestamp = 60 / 60 / 24 / 1000,
+                                tokenPrice;
+
+                            if (endDate - currentDate > 3 * 7 * dayTimestamp){
+                                tokenPrice = 100;
+                            } else if (endDate - currentDate > 7 * dayTimestamp){
+                                tokenPrice = 150;
+                            } else {
+                                tokenPrice = 250;
+                            }
+
+                            let fundAmount = incomeETH * tokenPrice;
 
                             logger.info(`New executed transaction found. Deposit wallet id: ${wallet._id}`);
                             wallet.executedAt = Date.now();
@@ -61,7 +76,8 @@ class CronController {
                                 address         : result.address,
                                 outgoingCoin    : result.outgoingCoin,
                                 outgoingType    : result.outgoingType,
-                                transaction     : result.transaction
+                                transaction     : result.transaction,
+                                fundAmount      : fundAmount
                             };
                             wallet.save((err, wallet)=>{
                                 cb(err, wallet);
@@ -82,24 +98,8 @@ class CronController {
                                 return cb();
                             }
 
-                            let incomeETH = parseFloat(wallet.transaction.outgoingCoin),
-                                endDate = Date.parse(config['deadline']),
-                                currentDate = Date.now(),
-                                dayTimestamp = 60 / 60 / 24 / 1000,
-                                tokenPrice;
-
-                            if (endDate - currentDate > 3 * 7 * dayTimestamp){
-                                tokenPrice = 100;
-                            } else if (endDate - currentDate > 7 * dayTimestamp){
-                                tokenPrice = 150;
-                            } else {
-                                tokenPrice = 250;
-                            }
-
-                            let amount = incomeETH * tokenPrice;
-
-                            logger.info(`Fund user ${user._id} balance with ${amount} finney`);
-                            user.balance = (user.balance + incomeETH * tokenPrice);
+                            logger.info(`Fund user ${user._id} balance with ${wallet.transaction.fundAmount} finney`);
+                            user.balance = (user.balance + wallet.transaction.fundAmount);
                             user.save((err, user)=>{
                                 cb(err, user);
                             });

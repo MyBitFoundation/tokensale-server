@@ -27,6 +27,7 @@ let APIController = {
 		APIController.addHandler('get', '/users/me', Controllers.authority.me);
 
         APIController.addHandler('post', '/crowdsale/deposit', Controllers.crowdsale.deposit);
+        APIController.addHandler('get', '/crowdsale/transactions', Controllers.crowdsale.transactions);
 	},
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app: {},
