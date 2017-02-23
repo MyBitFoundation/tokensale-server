@@ -177,9 +177,9 @@ class CronController {
                             } else {
                                 let info = JSON.parse(body);
 
-                                if(!info.rate) cb('Api error');
+                                if(!info.rate || !parseFloat(info.rate)) cb('Api error');
 
-                                cb(null, { key, rate : new BigNumber(info.rate) });
+                                cb(null, { key, rate : new BigNumber(parseFloat(info.rate)) });
                             }
                         });
                     }

@@ -3,7 +3,8 @@
 let async = require('async'),
 	passwordHash = require('password-hash'),
 	logger = require('log4js').getLogger('Users Controller'),
-    twoFactor = require('node-2fa');
+    twoFactor = require('node-2fa'),
+    helperFunctions = require('../Components/helper');
 
 let Controllers = getControllers(),
 	Models = getModels();
@@ -31,6 +32,7 @@ class UsersController {
 		email = email.toLowerCase();
 		Models.users.findOne({email}, (err, exist) => {
 			if(exist) return cb(`User with email ${email} already exist`);
+
 			Models.users.create({email, password}, err => {
 				if(err) return GlobalError('103232432', err, cb);
 				logger.info(`User ${email} created`);
@@ -40,7 +42,8 @@ class UsersController {
 	}
 
 	changePassword(callback, data){
-        let { _post, req, res } = data;
+        let { _post, req } = data;
+
         if(!_post.password_old) {
             return callback('Old password is required');
         }
@@ -152,3 +155,12 @@ class UsersController {
 }
 
 Controllers.users = new UsersController();
+
+// let password = 'asdqwe',
+//     email = 'saltysalt';
+//
+// helperFunctions.generateBrainkey(password, email, (brainKey)=>{
+//     console.log("brainKey", brainKey);
+//     console.log(helperFunctions.encryptBrainKey(brainKey, password));
+//     console.log(helperFunctions.decryptBrainKey(helperFunctions.encryptBrainKey(brainKey, password), password));
+// });

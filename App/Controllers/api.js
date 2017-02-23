@@ -108,7 +108,6 @@ let APIController = {
 							message: err
 						};
 					}
-					console.log("results", err, result);
 					return res.status((result && !isNaN(parseInt(result))) ? result : 400).end(JSON.stringify(err));
 				}
 				if(typeof result != 'object') {
