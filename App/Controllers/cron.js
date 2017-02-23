@@ -176,11 +176,17 @@ class CronController {
                                 cb(body.error);
                             } else {
                                 let info = JSON.parse(body);
+
+                                if(!info.rate) cb('Api error');
+
                                 cb(null, { key, rate : new BigNumber(info.rate) });
                             }
                         });
                     }
                 }), (err, results)=>{
+                    if(err){
+                        return callback(err);
+                    }
                     callback(null, Object.assign({}, ...results.map((info)=>{
                         return { [info.key] : info.rate.div(tokenPrice).toFixed(6) };
                     })));

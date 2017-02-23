@@ -26,6 +26,8 @@ let APIController = {
 		APIController.addHandler('get', '/users/logout', Controllers.authority.logout);
 		APIController.addHandler('get', '/users/me', Controllers.authority.me);
         APIController.addHandler('post', '/users/change-password', Controllers.users.changePassword);
+        APIController.addHandler('post', '/users/enable-tfa', Controllers.users.enableTFA);
+        APIController.addHandler('post', '/users/disable-tfa', Controllers.users.disableTFA);
 
         APIController.addHandler('post', '/crowdsale/deposit', Controllers.crowdsale.deposit);
         APIController.addHandler('get', '/crowdsale/transactions', Controllers.crowdsale.transactions);
@@ -106,6 +108,7 @@ let APIController = {
 							message: err
 						};
 					}
+					console.log("results", err, result);
 					return res.status((result && !isNaN(parseInt(result))) ? result : 400).end(JSON.stringify(err));
 				}
 				if(typeof result != 'object') {
@@ -119,7 +122,7 @@ let APIController = {
 		});
 	},
 	logRouter: (type, route) => {
-		return logger.info('New request', type, route);
+		return logger.info(`[REQUEST] ${type.toUpperCase()}: '${route}'`);
 	}
 };
 Controllers.api = APIController;

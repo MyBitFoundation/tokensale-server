@@ -14,6 +14,16 @@ let main = (Connect) => {
 			type: String,
 			required: true
 		},
+		tfa : {
+			type : Boolean,
+			required : false,
+			default : false
+		},
+		secret : {
+			type : String,
+			required : false,
+			default : null
+		},
 		balance : {
 			type : Number,
 			default : 0,

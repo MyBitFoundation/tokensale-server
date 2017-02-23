@@ -5,7 +5,8 @@ let passport = require('passport'),
 	passwordHash = require('password-hash'),
 	async = require('async'),
 	moment = require('moment'),
-	logger = require('log4js').getLogger();
+	logger = require('log4js').getLogger(),
+    twoFactor = require('node-2fa');
 
 let Controllers = getControllers(),
 	Models = getModels();
@@ -32,6 +33,7 @@ let AuthorityController = {
 							if(user.disabled) {
 								return cb('User has been deactivated');
 							}
+
 							cb(null, user);
 						});
 					},
@@ -56,8 +58,8 @@ let AuthorityController = {
 		});
 	},
 	login: (cb, data) => {
-		let req = data.req,
-			res = data.res;
+		let  { req, res, _post } = data;
+
 		passport.authenticate('local', (err, user) => {
 			if(err) {
 				return cb(err);
@@ -65,6 +67,19 @@ let AuthorityController = {
 			if(!user) {
 				return cb('Invalid username or password');
 			}
+
+			if(user.tfa){
+				if(!_post.token){
+                    return cb('Two factor auth token required', 406);
+				}
+
+                let verification = twoFactor.verifyToken(user.secret, _post.token);
+
+                if(!verification || !verification.hasOwnProperty('delta') || verification.delta != 0){
+                    return cb('Two factor auth token is not correct', 406);
+                }
+			}
+
 			user.lastLoginDate = moment().format();
 			user.save();
 			user = user.toObject();
@@ -72,14 +87,10 @@ let AuthorityController = {
 				function(cb) {
 					req.logIn(user, function(err) {
 						if(err) {
-							console.log(err);
 							return cb('Login error');
 						}
 						
-						return cb(null, {
-							email: user.email,
-							lastLoginDate: user.lastLoginDate
-						});
+						return Controllers.authority.me(cb, data);
 					});
 				}
 			], cb);
@@ -90,12 +101,13 @@ let AuthorityController = {
 		cb();
 	},
 	me(cb, data) {
-		let balance = data.req.user.balance ? parseFloat(data.req.user.balance) : 0;
+		let { email, balance, tfa, lastLoginDate } = data.req.session.passport.user;
 
 		cb(null, {
-			email: data.req.user.email,
-            balance,
-			lastLoginDate: data.req.user.lastLoginDate
+            email,
+			balance : parseFloat(balance),
+			tfa,
+			lastLoginDate
 		});
 	}
 };
