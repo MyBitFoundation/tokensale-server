@@ -25,6 +25,7 @@ let APIController = {
 		APIController.addHandler('post', '/users/login', Controllers.authority.login, true);
 		APIController.addHandler('get', '/users/logout', Controllers.authority.logout);
 		APIController.addHandler('get', '/users/me', Controllers.authority.me);
+        APIController.addHandler('post', '/users/change-password', Controllers.users.changePassword);
 
         APIController.addHandler('post', '/crowdsale/deposit', Controllers.crowdsale.deposit);
         APIController.addHandler('get', '/crowdsale/transactions', Controllers.crowdsale.transactions);

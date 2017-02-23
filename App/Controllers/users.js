@@ -37,6 +37,38 @@ class UsersController {
 			});
 		});
 	}
+
+	changePassword(cb, { _post, req }){
+        if(!_post.password_old) {
+            return cb('Old password is required');
+        }
+
+        if(!_post.password_new) {
+            return cb('New password is required');
+        }
+
+        if(_post.password_retype != _post.password_new) {
+            return cb('New password is not match retyped password');
+        }
+
+        let { email, password } = req.user;
+
+        if(!passwordHash.verify(_post.password_old, password)){
+        	return cb('Incorrect password');
+		}
+
+
+        Models.users.findOne({ email }, (err, user) => {
+            if(!user) return cb(`User with email ${email} is not exist`);
+
+            user.password = passwordHash.generate(_post.password_new);
+            user.save((err, user)=>{
+                if(err) return cb(`Updating user error`);
+
+                cb(null, {});
+            });
+        });
+	}
 }
 
 Controllers.users = new UsersController();
