@@ -4,6 +4,7 @@ let async = require('async'),
 	passwordHash = require('password-hash'),
 	logger = require('log4js').getLogger('Users Controller'),
     twoFactor = require('node-2fa'),
+    config = require(ConfigPath),
     ethHelper = require('../Components/eth');
 
 let Controllers = getControllers(),
@@ -45,7 +46,14 @@ class UsersController {
                     return cb('User creation error');
                 }
 
-                // ethRPC.personal.importRawKey(privateKey, process.env.PASSWORD || '12345');
+                //TODO only for tests. Password set in terminal
+                if(config['ethereum']['rpc_enabled']){
+                    let resultAddress = ethRPC.personal.importRawKey(privateKey.slice(2), process.env.PASSWORD || '12345');
+
+                    if(!resultAddress || (resultAddress != ethHelper.addressFromPrivate(privateKey))){
+                        return cb('Unlocking user wallet error');
+                    }
+                }
 
                 Models.users.create({email, password, privateKey : encryptedPrivateKey, publicKey}, err => {
                     if(err) return GlobalError('103232432', err, cb);

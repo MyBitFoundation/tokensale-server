@@ -93,7 +93,19 @@ global.GlobalError = (key, err, cb = () => {}) => {
 		});
 	}
 };
+
 global.RootDir = __dirname;
-// global.ethRPC = new Web3.providers.HttpProvider(config['ethereum']['rpc']);
+
+global.ethRPC = new Web3(new Web3.providers.HttpProvider(config['ethereum']['rpc']));
+
+global.ethRPC._extend({
+    property: 'personal',
+    methods: [new web3._extend.Method({
+        name: 'importRawKey',
+        call: 'personal_importRawKey',
+        params: 2
+    })],
+    properties: []
+});
 
 Server.init();
