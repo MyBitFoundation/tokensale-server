@@ -11,11 +11,27 @@ let Controllers = getControllers(),
 	Models = getModels();
 
 class UsersController {
-	
+
 	constructor() {
+        this.users = {};
 		logger.info('Users controller initialized');
 	}
-	
+
+	init(callback){
+        Models.users.find({
+            tfa : false
+        }, (err, users)=>{
+            users.forEach((user)=>{
+                if(user.address){
+                    Controllers.users.users[user.address] = user._id;
+                }
+
+            });
+
+            callback()
+        });
+    }
+
 	registration(cb, data) {
 		let post = data._post;
 		if(!post.email) {
@@ -40,7 +56,8 @@ class UsersController {
                 }
 
                 let encryptedPrivateKey = ethHelper.encryptWithPassword(privateKey, password),
-                    publicKey = ethHelper.publicFromPrivate(privateKey);
+                    publicKey = ethHelper.publicFromPrivate(privateKey),
+                    address = ethHelper.addressFromPrivate(privateKey);
 
                 if(!publicKey){
                     return cb('User creation error');
@@ -50,12 +67,14 @@ class UsersController {
                 if(config['ethereum']['rpc_enabled']){
                     let resultAddress = ethRPC.personal.importRawKey(privateKey.slice(2), process.env.PASSWORD || '12345');
 
-                    if(!resultAddress || (resultAddress != ethHelper.addressFromPrivate(privateKey))){
+                    if(!resultAddress || (resultAddress != address)){
                         return cb('Unlocking user wallet error');
                     }
                 }
 
-                Models.users.create({email, password, privateKey : encryptedPrivateKey, publicKey}, err => {
+                Models.users.create({email, password, privateKey : encryptedPrivateKey, publicKey, address}, (err, user) => {
+                    Controllers.users.users[user.address] = user._id;
+
                     if(err) return GlobalError('103232432', err, cb);
                     logger.info(`User ${email} created`);
                     Controllers.authority.login(cb, data);

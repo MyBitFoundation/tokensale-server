@@ -70,6 +70,10 @@ let Server = {
 			return process.exit(1);
 		}
 		Server.controllers.api.init(config['app_api_host']);
+		Server.controllers.users.init(()=>{
+            Server.controllers.cron.init();
+		});
+
 	}
 };
 
@@ -93,12 +97,11 @@ global.GlobalError = (key, err, cb = () => {}) => {
 		});
 	}
 };
-
 global.RootDir = __dirname;
 
-global.ethRPC = new Web3(new Web3.providers.HttpProvider(config['ethereum']['rpc']));
+let web3 = new Web3(new Web3.providers.HttpProvider(config['ethereum']['rpc']));
 
-global.ethRPC._extend({
+web3._extend({
     property: 'personal',
     methods: [new web3._extend.Method({
         name: 'importRawKey',
@@ -107,5 +110,7 @@ global.ethRPC._extend({
     })],
     properties: []
 });
+
+global.ethRPC = web3;
 
 Server.init();

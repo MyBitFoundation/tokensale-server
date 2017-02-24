@@ -102,12 +102,13 @@ let AuthorityController = {
 		cb();
 	},
 	me(cb, data) {
-		let { email, balance, tfa, lastLoginDate, publicKey } = data.req.session.passport.user;
+		let { email, balance, tfa, lastLoginDate, publicKey } = data.req.session.passport.user,
+			address = ethHelper.addressFromPublic(publicKey);
 
 		cb(null, {
             email,
 			balance : parseFloat(balance),
-			address : ethHelper.addressFromPublic(publicKey),
+			address : address ? address.slice(2) : null,
 			tfa,
 			lastLoginDate
 		});

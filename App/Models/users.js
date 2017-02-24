@@ -37,6 +37,10 @@ let main = (Connect) => {
             type : String,
             required : true
 		},
+        address : {
+            type : String,
+            required : true
+        },
 		disabled: {
 			type: Boolean,
 			default: false

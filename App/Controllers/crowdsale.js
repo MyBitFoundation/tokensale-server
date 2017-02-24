@@ -7,7 +7,7 @@ let request = require('request'),
     config = require(ConfigPath),
     moment = require('moment'),
     fx = require("money"),
-    BigNumber = require('bignumber.js');
+    ethHelper = require('../Components/eth');
 
 fx.base = "USD";
 
@@ -30,6 +30,16 @@ class CrowdsaleController {
 
         if(!currency) {
             return callback('Currency is required');
+        }
+
+        if(currency.toUpperCase() == 'ETH'){
+            let publicKey = data.req.user.publicKey;
+            let address = ethHelper.addressFromPublic(publicKey);
+
+            return callback(null, (publicKey && address) ? {
+                    address     : address.slice(2),
+                    type        : 'ETH'
+                } : null);
         }
 
         async.waterfall([
