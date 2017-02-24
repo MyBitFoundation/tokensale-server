@@ -58,13 +58,27 @@ class CrowdsaleController {
                 type        : wallet.depositType.toUpperCase()
             };
 
-            if(response.type == 'BTS'){
-                response.memo = wallet.extraInfo;
-            } else if(response.type == 'XMR'){
-                response.paymentId = wallet.extraInfo;
+            switch (response.type){
+                case 'BTS':
+                    return callback(null, {
+                        address     : wallet.extraInfo,
+                        memo        : wallet.deposit,
+                        type        : wallet.depositType.toUpperCase()
+                    });
+                    break;
+                case 'XMR':
+                    return callback(null, {
+                        address     : wallet.extraInfo,
+                        paymentId   : wallet.deposit,
+                        type        : wallet.depositType.toUpperCase()
+                    });
+                    break;
+                default:
+                    return callback(null, {
+                        address     : wallet.deposit,
+                        type        : wallet.depositType.toUpperCase()
+                    });
             }
-
-            callback(null, response);
         });
     }
 
