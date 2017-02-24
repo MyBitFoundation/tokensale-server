@@ -128,14 +128,15 @@ class CrowdsaleController {
                     newWallet = {
                         userId : userId,
                         orderId : response.orderId,
-                        deposit: (coin == 'XMR' || coin == 'BTS') ? response.sAddress : response.deposit,
+                        deposit: response.deposit,
                         depositType: coin,
-                        extraInfo: (coin == 'XMR' || coin == 'BTS') ? response.deposit : null,
+                        extraInfo: (coin == 'XMR' || coin == 'BTS') ? response.sAddress : null,
                         executed : false,
                         executedAt : null
                     };
 
                 Models.depositWallets.create(newWallet, err=>{
+                    console.log(err);
                     if(err) return cb('Insert deposit wallet error');
                     logger.info(`New ${currency} wallet created by user ${userId}`);
                     cb(null, newWallet);

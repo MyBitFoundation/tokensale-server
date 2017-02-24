@@ -5,7 +5,8 @@ let async = require('async'),
 	dir = require('node-dir'),
 	fs = require('fs'),
 	Raven = require('raven'),
-	moment = require('moment');
+	moment = require('moment'),
+	Web3 = require('web3');
 
 global.ConfigPath = __dirname + '/config/main.json';
 
@@ -94,5 +95,6 @@ global.GlobalError = (key, err, cb = () => {}) => {
 };
 
 global.RootDir = __dirname;
+// global.web3 = new Web3.providers.HttpProvider(config['ethereum']['rpc']);
 
 Server.init();
