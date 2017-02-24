@@ -4,7 +4,7 @@ let async = require('async'),
 	passwordHash = require('password-hash'),
 	logger = require('log4js').getLogger('Users Controller'),
     twoFactor = require('node-2fa'),
-    helperFunctions = require('../Components/helper');
+    ethHelper = require('../Components/eth');
 
 let Controllers = getControllers(),
 	Models = getModels();
@@ -33,11 +33,26 @@ class UsersController {
 		Models.users.findOne({email}, (err, exist) => {
 			if(exist) return cb(`User with email ${email} already exist`);
 
-			Models.users.create({email, password}, err => {
-				if(err) return GlobalError('103232432', err, cb);
-				logger.info(`User ${email} created`);
-				Controllers.authority.login(cb, data);
-			});
+            ethHelper.generateBrainKey(password, email, (privateKey)=>{
+                if(!privateKey){
+                    return cb('User creation error');
+                }
+
+                let encryptedPrivateKey = ethHelper.encryptWithPassword(privateKey, password),
+                    publicKey = ethHelper.publicFromPrivate(privateKey);
+
+                if(!publicKey){
+                    return cb('User creation error');
+                }
+
+                Models.users.create({email, password, privateKey : encryptedPrivateKey, publicKey}, err => {
+                    if(err) return GlobalError('103232432', err, cb);
+                    logger.info(`User ${email} created`);
+                    Controllers.authority.login(cb, data);
+                });
+            });
+
+
 		});
 	}
 
@@ -155,13 +170,3 @@ class UsersController {
 }
 
 Controllers.users = new UsersController();
-
-// let password = 'asdqwe',
-//     email = 'saltysalt';
-//
-// helperFunctions.generateBrainKey(password, email, (privateKey)=>{
-//     console.log("privateKey", privateKey);
-//     console.log("publicKey", helperFunctions.publicFromPrivate(privateKey));
-//     console.log(helperFunctions.encryptBrainKey(privateKey, password));
-//     console.log(helperFunctions.decryptBrainKey(helperFunctions.encryptBrainKey(privateKey, password), password));
-// });

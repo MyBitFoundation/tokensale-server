@@ -87,7 +87,7 @@ class CrowdsaleController {
                     sentCoinType  : wallet.transaction.incomingType,
                     transactionId : wallet.transaction.transaction,
                     address       : wallet.transaction.withdraw,
-                    amount        : parseFloat(wallet.transaction.fundAmount),
+                    receivedAmount: parseFloat(wallet.transaction.fundAmount),
                     rate          : parseFloat(wallet.transaction.incomingCoin / wallet.transaction.fundAmount)
                 };
             });

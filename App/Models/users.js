@@ -29,10 +29,13 @@ let main = (Connect) => {
 			default : 0,
 			required : true
 		},
-		encryptedAddress : {
+		privateKey : {
             type : String,
-            required : false,
-            default : null
+            required : true
+		},
+		publicKey : {
+            type : String,
+            required : true
 		},
 		disabled: {
 			type: Boolean,

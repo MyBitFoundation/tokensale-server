@@ -6,7 +6,8 @@ let passport = require('passport'),
 	async = require('async'),
 	moment = require('moment'),
 	logger = require('log4js').getLogger(),
-    twoFactor = require('node-2fa');
+    twoFactor = require('node-2fa'),
+    ethHelper = require('../Components/eth');
 
 let Controllers = getControllers(),
 	Models = getModels();
@@ -101,11 +102,12 @@ let AuthorityController = {
 		cb();
 	},
 	me(cb, data) {
-		let { email, balance, tfa, lastLoginDate } = data.req.session.passport.user;
+		let { email, balance, tfa, lastLoginDate, publicKey } = data.req.session.passport.user;
 
 		cb(null, {
             email,
 			balance : parseFloat(balance),
+			address : ethHelper.addressFromPublic(publicKey),
 			tfa,
 			lastLoginDate
 		});
