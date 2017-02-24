@@ -197,7 +197,7 @@ class CronController {
                                                     user.balance = parseFloat(user.balance) + resultAmount;
                                                     user.save((err)=>{
                                                         logger.info(`Fund user ${user._id} balance with ${resultAmount} finney`);
-                                                        
+
                                                         //TODO update settings (save block : currentBlockIndex, index : currentTransactionIndex);
                                                         currentTransactionIndex++;
                                                         transactionCallback(null, currentTransactionIndex);
