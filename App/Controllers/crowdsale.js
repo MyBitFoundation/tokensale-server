@@ -130,7 +130,7 @@ class CrowdsaleController {
                 },(error, response, body)=>{
                     if(error || response.statusCode != 200){
                         cb('Api error');
-                    } else if(body.error) {
+                    } else if('Api error' + body.error) {
                         cb(body.error);
                     } else {
                         cb(null, body);

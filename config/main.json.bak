@@ -13,7 +13,8 @@
 	},
 
 	"ethereum" : {
-		"public_key" : "42e644ceda01b567d1b7ff05b03bf46e64b3183b"
+		"public_key" : "42e644ceda01b567d1b7ff05b03bf46e64b3183b",
+		"rpc" : "http://localhost:9545"
 	},
 
 	"deadline" : "2017-02-27 00:00:00"

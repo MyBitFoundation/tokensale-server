@@ -93,8 +93,7 @@ global.GlobalError = (key, err, cb = () => {}) => {
 		});
 	}
 };
-
 global.RootDir = __dirname;
-// global.web3 = new Web3.providers.HttpProvider(config['ethereum']['rpc']);
+// global.ethRPC = new Web3.providers.HttpProvider(config['ethereum']['rpc']);
 
 Server.init();

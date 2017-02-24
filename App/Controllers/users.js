@@ -45,6 +45,8 @@ class UsersController {
                     return cb('User creation error');
                 }
 
+                // ethRPC.personal.importRawKey(privateKey, process.env.PASSWORD || '12345');
+
                 Models.users.create({email, password, privateKey : encryptedPrivateKey, publicKey}, err => {
                     if(err) return GlobalError('103232432', err, cb);
                     logger.info(`User ${email} created`);
