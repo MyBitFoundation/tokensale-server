@@ -131,8 +131,15 @@ class CronController {
     }
 
     static handleETHDeposits(){
-        let lastBlock = ethRPC.eth.getBlock("latest")['number'],
-            currentBlockIndex = 1420,
+        let lastBlock = ethRPC.eth.getBlock("latest");
+
+        if(!lastBlock || !lastBlock['number']){
+            return;
+        }
+
+
+        let lastBlockIndex = lastBlock['number'],
+            currentBlockIndex = 0,//TODO set last from settings
             currentHandledTransaction = -1;
 
         let endDate = Date.parse(config['deadline']),
@@ -149,7 +156,7 @@ class CronController {
         }
 
         async.whilst(
-            ()=>currentBlockIndex <= lastBlock,
+            ()=>currentBlockIndex <= lastBlockIndex,
             (blockCallback)=>{
                 let currentBlock = ethRPC.eth.getBlock(currentBlockIndex);
 
