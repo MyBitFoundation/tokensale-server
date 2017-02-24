@@ -159,8 +159,9 @@ Controllers.users = new UsersController();
 // let password = 'asdqwe',
 //     email = 'saltysalt';
 //
-// helperFunctions.generateBrainkey(password, email, (brainKey)=>{
-//     console.log("brainKey", brainKey);
-//     console.log(helperFunctions.encryptBrainKey(brainKey, password));
-//     console.log(helperFunctions.decryptBrainKey(helperFunctions.encryptBrainKey(brainKey, password), password));
+// helperFunctions.generateBrainKey(password, email, (privateKey)=>{
+//     console.log("privateKey", privateKey);
+//     console.log("publicKey", helperFunctions.publicFromPrivate(privateKey));
+//     console.log(helperFunctions.encryptBrainKey(privateKey, password));
+//     console.log(helperFunctions.decryptBrainKey(helperFunctions.encryptBrainKey(privateKey, password), password));
 // });
