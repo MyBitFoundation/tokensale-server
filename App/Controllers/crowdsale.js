@@ -39,7 +39,7 @@ class CrowdsaleController {
         // }
 
         if(!Contracts.crowdsale.amountRaised || Contracts.crowdsale.amountRaised < 2000){
-            return 200;
+            return 250;
         } else if(Contracts.crowdsale.amountRaised < 8000){
             return 150;
         } else {

@@ -23,7 +23,7 @@ class CrowdsaleContract {
 	}
 	
 	bindAmountRaised() {
-		this.amountRaised = this.contract.amountRaised();
+		this.amountRaised = this.contract.amountRaised() / 1000000000000000000;
 	}
 	
 	startEventsWatcher(block) {
