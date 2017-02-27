@@ -26,16 +26,16 @@ class CronController {
 		cron.schedule('* * * * *', () => {
 			CronController.handleDeposits();
 		});
-		
-		Models.settings.get('last_processed_eth_block', (err, result) => {
-			this.lastProcessedBlockIndex = parseInt(result || config['ethereum']['firstBlockForProcessing']);
-			
-			this.handleETHDeposits();
-		});
-		
-		// cron.schedule('* * * * *', ()=>{
-		//     CronController.handleETHDeposits();
-		// });
+
+        //TODO only for tests.
+        if(config['ethereum']['rpc_enabled']){
+            Models.settings.get('last_processed_eth_block', (err, result) => {
+                this.lastProcessedBlockIndex = parseInt(result || config['ethereum']['firstBlockForProcessing']);
+
+                this.handleETHDeposits();
+            });
+		}
+
 		
 		CronController.handleRates();
 		cron.schedule('* * * * *', () => {
@@ -84,13 +84,17 @@ class CronController {
 						},
 						(result, cb) => {
 							if(result.status != 'complete') {
-								return cb(null, null);
+								return cb(null, null, null);
 							}
-							
-							let incomeETH = parseFloat(result.outgoingCoin),
-								fundAmount = incomeETH * tokenPrice;
-							
+
+                            //TODO only for tests.
+							let maxCommission = (config['ethereum']['rpc_enabled']) ? parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)) : 0,
+								incomeETH = parseFloat(result.outgoingCoin),
+								resultETH = incomeETH - maxCommission,
+								fundAmount = resultETH * tokenPrice;
+
 							logger.info(`New executed transaction found. Deposit wallet id: ${wallet._id}`);
+
 							wallet.executedAt = Date.now();
 							wallet.transaction = {
 								withdraw: result.withdraw,
@@ -102,31 +106,57 @@ class CronController {
 								transaction: result.transaction,
 								fundAmount: fundAmount
 							};
-							wallet.save((err, wallet) => {
-								cb(err, wallet);
-							});
+
+                            Models.users.findOne({
+                                _id: wallet.userId
+                            }, (err, user) => {
+                                cb(null, user, resultETH);
+                            });
 						},
-						(wallet, cb) => {
-							if(!wallet) {
-								return cb(null, null, null);
+						(user, resultETH, cb) => {
+							if(!user || resultETH === null) {
+								return cb(null, null);
 							}
-							Models.users.findOne({
-								_id: wallet.userId
-							}, (err, user) => {
-								cb(null, user, wallet);
-							});
+
+                            //TODO only for tests.
+                            if(config['ethereum']['rpc_enabled']){
+                                ethRPC.personal.unlockAccount(user.address, process.env.PASSWORD);
+
+                                ethRPC.eth.sendTransaction({
+                                    from : user.address,
+                                    to : config['ethereum']['crowdSaleContractAddress'].slice(2),
+                                    value : ethRPC.toWei(resultETH, 'ether')
+                                }, (err, address)=>{
+                                    if(err) return cb(err);
+
+                                    cb(null, user);
+                                });
+							} else {
+                                cb(null, user)
+							}
 						},
-						(user, wallet, cb) => {
-							if(!user || !wallet) {
-								return cb();
+						(user, cb) => {
+							if(!user) {
+								return cb(null, null);
 							}
-							
+
 							user.balance = (user.balance + wallet.transaction.fundAmount);
 							user.save((err, user) => {
+								if(err) return cb(err);
+
 								logger.info(`Fund user ${user._id} balance with ${wallet.transaction.fundAmount} finney`);
-								cb(err, user);
+								cb(null, user);
 							});
-						}
+						},
+                        (user, cb) => {
+                            if(!user) {
+                                return cb();
+                            }
+
+                            wallet.save((err, wallet) => {
+                                return cb();
+                            });
+                        },
 					], secondCb);
 				}, firstCb)
 			}
