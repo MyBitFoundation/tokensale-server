@@ -78,7 +78,7 @@ class CronController {
 							}
 
                             //TODO only for tests.
-							let maxCommission = (config['ethereum']['rpc_enabled']) ? parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)) : 0,
+							let maxCommission = (config['ethereum']['rpc_enabled']) ? 21000 * parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)) : 0,
 								incomeETH = parseFloat(result.outgoingCoin),
 								resultETH = incomeETH - maxCommission,
 								fundAmount = resultETH * tokenPrice;
@@ -100,6 +100,8 @@ class CronController {
                             Models.users.findOne({
                                 _id: wallet.userId
                             }, (err, user) => {
+                            	if(err) return cb(err);
+
                                 cb(null, user, resultETH);
                             });
 						},
@@ -185,7 +187,7 @@ class CronController {
 					}
 					
 					let userId = Controllers.users.users[currentTransaction.to],
-                        maxCommission = parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
+                        maxCommission = 21000 * parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
 						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 						resultAmount = tokenPrice * (amount - maxCommission);
 					
