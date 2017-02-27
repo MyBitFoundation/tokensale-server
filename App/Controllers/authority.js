@@ -112,7 +112,8 @@ let AuthorityController = {
 			address : address ? address.slice(2) : null,
 			tfa,
 			lastLoginDate,
-			tokenPrice : Controllers.crowdsale.getTokenPrice()
+			tokenPrice : Controllers.crowdsale.getTokenPrice(),
+			amountRaised : Contracts.crowdsale.amountRaised || 0
 		});
 	}
 };
