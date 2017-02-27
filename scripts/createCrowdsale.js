@@ -15,6 +15,9 @@ let tokenContractSource = fs.readFileSync(__dirname + '/contracts/token.sol').to
 	tokenAddress = '0x24f674229671b26ee97c62b31ea01537eacb7df2',
 	token = web3.eth.contract(tokenCompiled['<stdin>:MyToken'].info.abiDefinition).at(tokenAddress);
 
+	console.log(tokenCompiled['<stdin>:MyToken'].info.abiDefinition);
+	return;
+
 crowdSaleContract.new(account, 1000, 200, tokenAddress, {
 	from: account,
 	data: crowdSaleCompiled['<stdin>:Crowdsale'].code,
@@ -35,10 +38,10 @@ crowdSaleContract.new(account, 1000, 200, tokenAddress, {
 		if(owner != contract.address) {
 			return setTimeout(() => checkOwner(), 1000);
 		}
-		
+
 		let croudsale = web3.eth.contract(crowdSaleCompiled['<stdin>:Crowdsale'].info.abiDefinition).at(contract.address);
 		setInterval(() => console.log(croudsale.balanceOf(account)), 1000);
-		
+
 		web3.eth.sendTransaction({
 			from: account,
 			to: contract.address,
@@ -47,7 +50,7 @@ crowdSaleContract.new(account, 1000, 200, tokenAddress, {
 			console.log(err, result);
 		});
 	};
-	
+
 	checkOwner();
 
 	token.transferOwnership(contract.address, {
