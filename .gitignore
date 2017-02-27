@@ -61,3 +61,4 @@ typings/
 
 .idea
 config/main.json
+.node-xmlhttprequest*

@@ -37,8 +37,8 @@ class CrowdsaleController {
             let address = ethHelper.addressFromPublic(publicKey);
 
             return callback(null, (publicKey && address) ? {
-                    address     : address.slice(2),
-                    type        : 'ETH'
+                    address: address.slice(2),
+                    type: 'ETH'
                 } : null);
         }
 
@@ -57,7 +57,7 @@ class CrowdsaleController {
                 if(wallet){
                     cb(null, wallet);
                 } else {
-                    CrowdsaleController.createTransactionWallet(currency, userId, cb);
+                    CrowdsaleController.createTransactionWallet(currency, userId, data.user.address, cb);
                 }
             }
         ], (err, wallet)=>{
@@ -125,14 +125,14 @@ class CrowdsaleController {
         callback(null, Controllers.crowdsale.ratesData);
     }
 
-    static createTransactionWallet(currency, userId, callback){
+    static createTransactionWallet(currency, userId, userAddress, callback){
         async.waterfall([
             (cb)=>{
                 request({
                     method: 'POST',
                     uri: 'https://shapeshift.io/shift',
                     json: {
-                        withdrawal:config['ethereum']['public_key'],
+                        withdrawal: userAddress || config['ethereum']['public_key'],
                         pair:`${currency.toLowerCase()}_eth`,
                         // returnAddress:"BBBBBBBBBBB",//TODO return address may be required (!!!important!!!)
                         apiKey : config['shapeshift']['public_key']
