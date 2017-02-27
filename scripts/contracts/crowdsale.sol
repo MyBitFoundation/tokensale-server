@@ -21,9 +21,9 @@ contract Crowdsale {
    uint tokenMultiplier = 10;
 
    // 2000 ETH
-   uint firstTierAmount = 2000000000000000000000;
+   uint firstTierAmount = 2000 ether;
    // 8000 ETH
-   uint secondTierAmount = 8000000000000000000000;
+   uint secondTierAmount = 8000 ether;
    /* data structure to hold information about campaign contributors */
    /*  at initialization, setup the owner */
    function Crowdsale(
@@ -48,7 +48,7 @@ contract Crowdsale {
                tokenPrice = 10 finney;
            }
        }
-       price = tokenPrice;
+       price = tokenPrice / tokenMultiplier;
        uint costPercent;
        uint amount = msg.value;
        balanceOf[msg.sender] = amount;

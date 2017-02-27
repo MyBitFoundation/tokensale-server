@@ -16,7 +16,7 @@
 		"public_key" : "42e644ceda01b567d1b7ff05b03bf46e64b3183b",
 		"rpc" : "http://localhost:9545",
 		"rpc_enabled" : true,
-        "crowdSaleContractAddress": "0x69c9e88C3e8da5CEe667DD2EC69479A8F87d6040"
+        "crowdSaleContractAddress": "0x28F201657B4DCbb5bd49c4f34155E8406d6408a4"
 	},
 
 	"deadline" : "2017-02-27 00:00:00"
