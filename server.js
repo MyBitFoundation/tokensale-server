@@ -51,7 +51,9 @@ let Server = {
         dir.files(__dirname + '/App/Contracts', function(err, files) {
             if(err) throw err;
             files.forEach(function(file) {
-            	console.log(file);
+            	if(file.match(/abe\.json/))
+            		return;
+            	// console.log(file);
                 // let name = file.replace(/.*\/([A-z]+)\.js/, '$1');
                 // logger.info(name);
                 let r = require(file);

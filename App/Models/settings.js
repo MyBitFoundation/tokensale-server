@@ -4,6 +4,7 @@
 "use strict";
 
 let logger = require('log4js').getLogger('Settings Model');
+let settingsHash = {};
 
 let main = (Connect) => {
 	let Schema = new Connect.Schema({
@@ -38,6 +39,10 @@ let main = (Connect) => {
 	};
 	
 	model.set = function(name, value, cb = () => {}) {
+		if(settingsHash.hasOwnProperty(name)) {
+			settingsHash[name].value = value;
+			return settingsHash[name].save((err) => cb(err));
+		}
 		model.findOne({
 			name: name
 		}, (err, Row) => {
@@ -58,6 +63,7 @@ let main = (Connect) => {
 					return cb();
 				});
 			} else {
+				settingsHash[name] = Row;
 				Row.value = value;
 				Row.save(function(err) {
 					if(err) {

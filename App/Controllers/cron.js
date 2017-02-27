@@ -230,7 +230,9 @@ class CronController {
                                 }, err => {
                                     if(err) return next(err);
                                     logger.info(`New ETH wallet created by user ${userId}`);
-
+                                    return next();
+                                    
+									//TODO: Logic transferred to Contracts/token.js (update only after reward in contract)
                                     user.balance = parseFloat(user.balance) + resultAmount;
                                     user.save(err => {
                                         if(err) return next();
@@ -243,7 +245,9 @@ class CronController {
                         });
 					});
 				}, (err) => {
-					blockCallback(null, currentBlockIndex)
+					Models.settings.set('last_processed_eth_block', currentBlockIndex, (err) => {
+						blockCallback(null, currentBlockIndex);
+					});
 				});
 			},
 			(err) => {

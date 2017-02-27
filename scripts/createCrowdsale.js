@@ -5,6 +5,59 @@ let account = "0x2672dc074d67cee2d3b7508d78661f6d0c277965";
 
 let web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:9545"));
 // web3.personal.unlockAccount(account, '1');
-let abe = [ { "constant": false, "inputs": [], "name": "checkGoalReached", "outputs": [], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "deadline", "outputs": [ { "name": "", "type": "uint256", "value": "1492214399" } ], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "beneficiary", "outputs": [ { "name": "", "type": "address", "value": "0x28f201657b4dcbb5bd49c4f34155e8406d6408a4" } ], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "tokenReward", "outputs": [ { "name": "", "type": "address", "value": "0xc2ef79c129afb38c82a0efa7d34187ce14557fc0" } ], "payable": false, "type": "function" }, { "constant": true, "inputs": [ { "name": "", "type": "address" } ], "name": "balanceOf", "outputs": [ { "name": "", "type": "uint256", "value": "0" } ], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "fundingGoal", "outputs": [ { "name": "", "type": "uint256", "value": "8e+21" } ], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "amountRaised", "outputs": [ { "name": "", "type": "uint256", "value": "1000000000000000000" } ], "payable": false, "type": "function" }, { "constant": true, "inputs": [], "name": "tokenPrice", "outputs": [ { "name": "", "type": "uint256", "value": "4000000000000000" } ], "payable": false, "type": "function" }, { "constant": false, "inputs": [], "name": "safeWithdrawal", "outputs": [], "payable": false, "type": "function" }, { "inputs": [ { "name": "ifSuccessfulSendTo", "type": "address", "index": 0, "typeShort": "address", "bits": "", "displayName": "if Successful Send To", "template": "elements_input_address", "value": "" }, { "name": "fundingGoalInEthers", "type": "uint256", "index": 1, "typeShort": "uint", "bits": "256", "displayName": "funding Goal In Ethers", "template": "elements_input_uint", "value": "" }, { "name": "addressOfTokenUsedAsReward", "type": "address", "index": 2, "typeShort": "address", "bits": "", "displayName": "address Of Token Used As Reward", "template": "elements_input_address", "value": "" } ], "payable": false, "type": "constructor" }, { "payable": true, "type": "fallback" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "beneficiary", "type": "address" }, { "indexed": false, "name": "amountRaised", "type": "uint256" } ], "name": "GoalReached", "type": "event" }, { "anonymous": false, "inputs": [ { "indexed": false, "name": "backer", "type": "address" }, { "indexed": false, "name": "amount", "type": "uint256" }, { "indexed": false, "name": "isContribution", "type": "bool" } ], "name": "FundTransfer", "type": "event" } ];
-let croudsale = web3.eth.contract(abe).at("0xc6Cc97A710F282dcb41C74F72C91BB0B8557637e");
-console.log(croudsale.deadline());
+
+let crowdSaleContractSource = fs.readFileSync(__dirname + '/contracts/crowdsale.sol').toString().replace(/\s/g, ' ').replace(/\s{2,}/g, ' ');
+console.log(crowdSaleContractSource);
+let crowdSaleCompiled = web3.eth.compile.solidity(crowdSaleContractSource);
+// 	crowdSaleContract = web3.eth.contract(crowdSaleCompiled['<stdin>:Crowdsale'].info.abiDefinition);
+// console.log(crowdSaleCompiled['<stdin>:Crowdsale'].info.abiDefinition);
+return;
+// let tokenContractSource = fs.readFileSync(__dirname + '/contracts/token.sol').toString().replace(/\s/g, ' ').replace(/\s{2,}/g, ' '),
+// 	tokenCompiled = web3.eth.compile.solidity(tokenContractSource),
+// 	tokenAddress = '0x24f674229671b26ee97c62b31ea01537eacb7df2',
+// 	token = web3.eth.contract(tokenCompiled['<stdin>:MyToken'].info.abiDefinition).at(tokenAddress);
+// let crowdsale = web3.eth.contract(tokenCompiled['<stdin>:MyToken'].info.abiDefinition).at(tokenAddress);
+// 	console.log(tokenCompiled['<stdin>:MyToken'].info.abiDefinition);
+// 	return;
+
+crowdSaleContract.new(account, 1000, 200, tokenAddress, {
+	from: account,
+	data: crowdSaleCompiled['<stdin>:Crowdsale'].code,
+	gas: 1000000
+}, function(e, contract) {
+	if(e) {
+		return console.log(e);
+	}
+	if(!contract.address) {
+		return console.log("Contract transaction send: TransactionHash: " + contract.transactionHash + " waiting to be mined...");
+	}
+
+	console.log('Mined crowdSale', contract.address);
+
+	let checkOwner = () => {
+		let owner = token.owner();
+		console.log('Owner', owner);
+		if(owner != contract.address) {
+			return setTimeout(() => checkOwner(), 1000);
+		}
+
+		let croudsale = web3.eth.contract(crowdSaleCompiled['<stdin>:Crowdsale'].info.abiDefinition).at(contract.address);
+		setInterval(() => console.log(croudsale.balanceOf(account)), 1000);
+
+		web3.eth.sendTransaction({
+			from: account,
+			to: contract.address,
+			value: web3.toWei(1, 'ether')
+		}, (err, result) => {
+			console.log(err, result);
+		});
+	};
+
+	checkOwner();
+
+	token.transferOwnership(contract.address, {
+		from: account
+	}, (err, result) => {
+		console.log(err, result);
+	});
+});

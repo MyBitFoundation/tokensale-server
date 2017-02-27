@@ -102,3 +102,4 @@ return;
 // web3.eth.sendTransaction({from: web3.eth.accounts[0], to: '0xf09232a994add8722642288a22126a0ab07d9de1', value: web3.toWei(1, 'ether')})
 
 web3.sha3('transferOwnership(address)').substr(0, 8)
+
