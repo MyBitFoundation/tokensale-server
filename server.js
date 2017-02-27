@@ -25,10 +25,12 @@ if(!config['disableRaven']) {
 }
 let Server = {
 	models: {},
+    contracts: {},
 	controllers: {},
 	init: function() {
 		async.waterfall([
 			this.runModels,
+            this.runContracts,
 			this.runControllers,
 			this.bindDefault,
 			this.run
@@ -45,6 +47,19 @@ let Server = {
 			cb();
 		});
 	},
+    runContracts: (cb) => {
+        dir.files(__dirname + '/App/Contracts', function(err, files) {
+            if(err) throw err;
+            files.forEach(function(file) {
+            	console.log(file);
+                // let name = file.replace(/.*\/([A-z]+)\.js/, '$1');
+                // logger.info(name);
+                let r = require(file);
+                // if(typeof r == 'function') r(true);
+            });
+            cb();
+        });
+    },
 	runControllers: (cb) => {
 		dir.files(__dirname + '/App/Controllers', function(err, files) {
 			if(err) throw err;
@@ -81,6 +96,8 @@ let Server = {
  * @returns {{}}
  */
 global.getModels = () => Server.models;
+
+global.getContracts = () => Server.contracts;
 
 global.getControllers = () => Server.controllers;
 

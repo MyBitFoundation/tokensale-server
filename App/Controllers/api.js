@@ -16,6 +16,7 @@ let async = require('async'),
 	fs = require('fs');
 
 let Controllers = getControllers();
+let Contracts = getContracts();
 let Models = getModels();
 
 let APIController = {

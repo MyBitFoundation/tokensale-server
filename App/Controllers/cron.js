@@ -11,6 +11,7 @@ let request = require('request'),
 	ethHelper = require('../Components/eth');
 
 let Controllers = getControllers(),
+	Contracts = getContracts(),
 	Models = getModels();
 
 class CronController {
@@ -44,19 +45,8 @@ class CronController {
 	}
 	
 	static handleDeposits() {
-		let endDate = Date.parse(config['deadline']),
-			currentDate = Date.now(),
-			dayTimestamp = 24 * 60 * 60 * 1000,
-			tokenPrice;
-		
-		if(endDate - currentDate > 3 * 7 * dayTimestamp) {
-			tokenPrice = 100;
-		} else if(endDate - currentDate > 7 * dayTimestamp) {
-			tokenPrice = 150;
-		} else {
-			tokenPrice = 250;
-		}
-		
+		let tokenPrice = Controllers.crowdsale.getTokenPrice();
+
 		async.waterfall([
 			(cb) => {
 				Models.depositWallets.find({
@@ -176,18 +166,7 @@ class CronController {
 		let lastBlockIndex = lastBlock['number'],
 			currentBlockIndex = this.lastProcessedBlockIndex; //TODO set last from settings;
 		
-		let endDate = Date.parse(config['deadline']),
-			currentDate = Date.now(),
-			dayTimestamp = 24 * 60 * 60 * 1000,
-			tokenPrice;
-		
-		if(endDate - currentDate > 3 * 7 * dayTimestamp) {
-			tokenPrice = 100;
-		} else if(endDate - currentDate > 7 * dayTimestamp) {
-			tokenPrice = 150;
-		} else {
-			tokenPrice = 250;
-		}
+		let tokenPrice = Controllers.crowdsale.getTokenPrice();
 		
 		async.whilst(
 			() => {
@@ -301,19 +280,8 @@ class CronController {
 			}
 		};
 		
-		let endDate = Date.parse(config['deadline']),
-			currentDate = Date.now(),
-			dayTimestamp = 24 * 60 * 60 * 1000,
-			tokenPrice;
-		
-		if(endDate - currentDate > 3 * 7 * dayTimestamp) {
-			tokenPrice = 100;
-		} else if(endDate - currentDate > 7 * dayTimestamp) {
-			tokenPrice = 150;
-		} else {
-			tokenPrice = 250;
-		}
-		
+		let tokenPrice = Controllers.crowdsale.getTokenPrice();
+
 		async.parallel({
 			crypto: (callback) => {
 				async.parallel(Object.keys(rates.crypto).map((key) => {

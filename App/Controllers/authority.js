@@ -10,6 +10,7 @@ let passport = require('passport'),
     ethHelper = require('../Components/eth');
 
 let Controllers = getControllers(),
+	Contracts = getContracts(),
 	Models = getModels();
 
 let AuthorityController = {
@@ -110,7 +111,8 @@ let AuthorityController = {
 			balance : parseFloat(balance),
 			address : address ? address.slice(2) : null,
 			tfa,
-			lastLoginDate
+			lastLoginDate,
+			tokenPrice : Controllers.crowdsale.getTokenPrice()
 		});
 	}
 };

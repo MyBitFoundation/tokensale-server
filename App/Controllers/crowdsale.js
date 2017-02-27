@@ -12,6 +12,7 @@ let request = require('request'),
 fx.base = "USD";
 
 let Controllers = getControllers(),
+    Contracts = getContracts(),
     Models = getModels();
 
 class CrowdsaleController {
@@ -22,6 +23,28 @@ class CrowdsaleController {
             crypto : {}
         };
         logger.info('Crowdsale controller initialized');
+    }
+
+    getTokenPrice(){
+        // let endDate = Date.parse(config['deadline']),
+        //     currentDate = Date.now(),
+        //     dayTimestamp = 24 * 60 * 60 * 1000;
+        //
+        // if(endDate - currentDate > 3 * 7 * dayTimestamp) {
+        //     return 100;
+        // } else if(endDate - currentDate > 7 * dayTimestamp) {
+        //     return 150;
+        // } else {
+        //     return 250;
+        // }
+
+        if(!Contracts.crowdsale.amountRaised || Contracts.crowdsale.amountRaised < 2000){
+            return 200;
+        } else if(Contracts.crowdsale.amountRaised < 8000){
+            return 150;
+        } else {
+            return 100;
+        }
     }
 
     deposit(callback, data){
