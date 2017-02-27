@@ -240,7 +240,7 @@ class CronController {
                                         withdraw: currentTransaction.hash,
                                         incomingCoin: amount,
                                         incomingType: 'ETH',
-                                        address: config['ethereum']['public_key'],
+                                        address: user.address,
                                         outgoingCoin: amount,
                                         outgoingType: 'ETH',
                                         transaction: currentTransaction.hash,
