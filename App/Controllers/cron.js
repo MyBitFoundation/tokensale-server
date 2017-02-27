@@ -206,48 +206,60 @@ class CronController {
 					}
 					
 					let userId = Controllers.users.users[currentTransaction.to],
+                        maxCommission = parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
 						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
-						resultAmount = tokenPrice * amount;
+						resultAmount = tokenPrice * (amount - maxCommission);
 					
 					Models.depositWallets.findOne({orderId: currentTransaction.hash}, (err, wallet) => {
 						if(wallet) {
 							return next();
 						}
-						
-						Models.depositWallets.create({
-							userId: userId,
-							orderId: currentTransaction.hash,
-							deposit: currentTransaction.to.slice(2),
-							depositType: 'ETH',
-							extraInfo: null,
-							executed: true,
-							executedAt: Date.now(),
-							transaction: {
-								withdraw: currentTransaction.hash,
-								incomingCoin: amount,
-								incomingType: 'ETH',
-								address: config['ethereum']['public_key'],
-								outgoingCoin: amount,
-								outgoingType: 'ETH',
-								transaction: currentTransaction.hash,
-								fundAmount: resultAmount
-							},
-						}, err => {
-							if(err) {
-								// logger.error('Error create wallet', err);
-								return next(err);
-							}
-							logger.info(`New ETH wallet created by user ${userId}`);
-							
-							Models.users.findOne({_id: userId}, (err, user) => {
-								user.balance = parseFloat(user.balance) + resultAmount;
-								user.save(err => {
-									logger.info(`Fund user ${user._id} balance with ${resultAmount} finney`);
-									
-									next();
-								});
-							});
-						});
+
+                        Models.users.findOne({_id: userId}, (err, user) => {
+                            if(err) return next();
+
+                            ethRPC.personal.unlockAccount(user.address, process.env.PASSWORD);
+
+                            ethRPC.eth.sendTransaction({
+                                from : user.address,
+                                to : config['ethereum']['crowdSaleContractAddress'].slice(2),
+                                value : ethRPC.toWei(amount - maxCommission, 'ether')
+                            }, (err, address)=>{
+                                if(err) return next(err);
+                                logger.info(`New transaction from ${user.address} to contract`);
+
+                                Models.depositWallets.create({
+                                    userId: userId,
+                                    orderId: currentTransaction.hash,
+                                    deposit: currentTransaction.to.slice(2),
+                                    depositType: 'ETH',
+                                    extraInfo: null,
+                                    executed: true,
+                                    executedAt: Date.now(),
+                                    transaction: {
+                                        withdraw: currentTransaction.hash,
+                                        incomingCoin: amount,
+                                        incomingType: 'ETH',
+                                        address: config['ethereum']['public_key'],
+                                        outgoingCoin: amount,
+                                        outgoingType: 'ETH',
+                                        transaction: currentTransaction.hash,
+                                        fundAmount: resultAmount
+                                    },
+                                }, err => {
+                                    if(err) return next(err);
+                                    logger.info(`New ETH wallet created by user ${userId}`);
+
+                                    user.balance = parseFloat(user.balance) + resultAmount;
+                                    user.save(err => {
+                                        if(err) return next();
+                                        logger.info(`Fund user ${user._id} balance with ${resultAmount} finney`);
+
+                                        next();
+                                    });
+                                });
+                            });
+                        });
 					});
 				}, (err) => {
 					blockCallback(null, currentBlockIndex)
