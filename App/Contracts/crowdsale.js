@@ -11,6 +11,9 @@ class CrowdsaleContract {
 	constructor() {
 		this.contract = ethRPC.eth.contract(abe).at(config['ethereum']['crowdSaleContractAddress']);
 		this.amountRaised = 0;
+		
+		if(!config['ethereum']['rpc_enabled'])
+			return;
 		this.tokenRewardAddress = this.contract.tokenReward();
 		this.bindAmountRaised();
 		

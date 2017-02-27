@@ -11,6 +11,9 @@ let Models = getModels();
 class TokenContract {
 	
 	constructor() {
+		
+		if(!config['ethereum']['rpc_enabled'])
+			return;
 		this.address = Contracts.crowdsale.tokenRewardAddress;
 		this.contract = ethRPC.eth.contract(abe).at(this.address);
 		this.precision = Math.pow(10, this.contract.decimals());
