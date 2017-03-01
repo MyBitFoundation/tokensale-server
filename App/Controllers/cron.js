@@ -194,6 +194,9 @@ class CronController {
 					logger.info('gas price', ethRPC.eth.gasPrice);
 					logger.info('gas', ethRPC.eth.gasPrice * 210000);
 					
+					logger.info(ethRPC.toWei(amount - maxCommission, 'ether'));
+					logger.info(ethRPC.toWei(maxCommission / ethRPC.eth.gasPrice, 'ether'));
+					
 					Models.depositWallets.findOne({orderId: currentTransaction.hash}, (err, wallet) => {
 						if(wallet) {
 							return next();
