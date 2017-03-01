@@ -41,6 +41,7 @@ class TokenContract {
 			logger.info(`Send token to ${toAddress} address`);
 			
 			Models.users.findOne({address: toAddress}, (err, User) => {
+				logger.info(User);
 				if(!User) return;
 				User.balance = parseInt(this.contract.balanceOf(toAddress))/this.precision;
 				return User.save();

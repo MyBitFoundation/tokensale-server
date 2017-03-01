@@ -78,7 +78,7 @@ class CronController {
 							}
 
                             //TODO only for tests.
-							let maxCommission = (config['ethereum']['rpc_enabled']) ? 21000 * parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)) : 0,
+							let maxCommission = ethRPC.fromWei(210000, 'ether'),
 								incomeETH = parseFloat(result.outgoingCoin),
 								resultETH = incomeETH - maxCommission,
 								fundAmount = resultETH * tokenPrice;
