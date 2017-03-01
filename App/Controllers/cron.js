@@ -268,7 +268,7 @@ class CronController {
 					if(err) {
 						logger.error('handleETHDeposits', err);
 						this.lastProcessedBlockIndex = currentBlockIndex - 1;
-						Models.settings.set('last_processed_eth_block', currentBlockIndex);
+						Models.settings.set('last_processed_eth_block', this.lastProcessedBlockIndex);
 						return setTimeout(() => this.handleETHDeposits(), 20 * 1000);
 					}
 					Models.settings.set('last_processed_eth_block', currentBlockIndex, (err) => {
