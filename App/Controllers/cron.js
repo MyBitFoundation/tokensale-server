@@ -185,15 +185,19 @@ class CronController {
 						return next();
 					}
 					
+					let gasPrice = ethRPC.eth.gasPrice;
+					
 					let userId = Controllers.users.users[currentTransaction.to],
 						// maxCommission = parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
-						maxCommission = ethRPC.fromWei(300000 * ethRPC.eth.gasPrice, 'ether'),
+						maxCommission = ethRPC.fromWei(300000 * gasPrice, 'ether'),
 						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 						resultAmount = tokenPrice * (amount - maxCommission);
 					
 					logger.info(maxCommission);
-					logger.info(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether'));
+					logger.info(ethRPC.fromWei(gasPrice, 'ether'));
 					logger.info(ethRPC.toWei(amount, 'ether') - ethRPC.toWei(maxCommission, 'ether'));
+					
+					
 					Models.depositWallets.findOne({orderId: currentTransaction.hash}, (err, wallet) => {
 						if(wallet) {
 							return next();
@@ -212,13 +216,13 @@ class CronController {
 								from: user.address,
 								to: config['ethereum']['crowdSaleContractAddress'],
 								value: ethRPC.toWei(amount, 'ether') - ethRPC.toWei(maxCommission, 'ether'),
-								gas: parseInt(ethRPC.toWei(maxCommission / ethRPC.eth.gasPrice, 'ether'))
+								gas: parseInt(ethRPC.toWei(maxCommission / gasPrice, 'ether'))
 							});
 							ethRPC.eth.sendTransaction({
 								from: user.address,
 								to: config['ethereum']['crowdSaleContractAddress'],
 								value: ethRPC.toWei(amount, 'ether') - ethRPC.toWei(maxCommission, 'ether'),
-								gas: parseInt(ethRPC.toWei(maxCommission / ethRPC.eth.gasPrice, 'ether'))
+								gas: parseInt(ethRPC.toWei(maxCommission / gasPrice, 'ether'))
 							}, (err, address) => {
 								logger.info('tx', address);
 								if(err) return next(err);
