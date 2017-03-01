@@ -20,7 +20,7 @@ if(!fs.existsSync(__dirname + '/password')) {
 	logger.error("File with password not found. Please create password file in root folder");
 	process.exit(1);
 }
-global.ethPassword = fs.readFileSync(__dirname + '/password');
+global.ethPassword = fs.readFileSync(__dirname + '/password').toString();
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 logger.error("!!!! Don't forget remove file with password !!!!");
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");

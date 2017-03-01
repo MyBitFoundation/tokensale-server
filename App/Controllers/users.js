@@ -55,7 +55,6 @@ class UsersController {
                     return cb('User creation error');
                 }
 
-                logger.info(privateKey, password);
                 let encryptedPrivateKey = ethHelper.encryptWithPassword(privateKey, password),
                     publicKey = ethHelper.publicFromPrivate(privateKey),
                     address = ethHelper.addressFromPrivate(privateKey);
