@@ -78,7 +78,7 @@ class CronController {
 							}
 
                             //TODO only for tests.
-							let maxCommission = ethRPC.fromWei(210000, 'ether'),
+							let maxCommission = ethRPC.fromWei(210000 * ethRPC.eth.gasPrice, 'ether'),
 								incomeETH = parseFloat(result.outgoingCoin),
 								resultETH = incomeETH - maxCommission,
 								fundAmount = resultETH * tokenPrice;
@@ -188,7 +188,7 @@ class CronController {
 					
 					let userId = Controllers.users.users[currentTransaction.to],
                         // maxCommission = parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
-                        maxCommission = ethRPC.fromWei(210000, 'ether'),
+                        maxCommission = ethRPC.fromWei(210000 * ethRPC.eth.gasPrice, 'ether'),
 						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 						resultAmount = tokenPrice * (amount - maxCommission);
 					
@@ -243,7 +243,10 @@ class CronController {
 	                                    tokenPrice: tokenPrice
                                     },
                                 }, err => {
-                                    if(err) return next(err);
+                                    if(err) {
+	                                    currentBlockIndex--;
+	                                    return next(err);
+                                    }
                                     logger.info(`New ETH wallet created by user ${userId}`);
                                     return next();
                                     
