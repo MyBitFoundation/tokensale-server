@@ -200,6 +200,7 @@ class CronController {
 						Models.users.findOne({_id: userId}, (err, user) => {
 							let balance = ethRPC.eth.getBalance(user.address);
 							logger.info(balance);
+							logger.info(parseInt(balance));
 							
 							
 							if(balance < amountInWei)
