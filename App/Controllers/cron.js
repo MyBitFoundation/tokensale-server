@@ -192,6 +192,7 @@ class CronController {
 						resultAmount = tokenPrice * (amount - maxCommission);
 					logger.info('amount', currentTransaction.value);
 					logger.info('gas price', ethRPC.eth.gasPrice);
+					logger.info('gas', ethRPC.eth.gasPrice * 210000);
 					
 					Models.depositWallets.findOne({orderId: currentTransaction.hash}, (err, wallet) => {
 						if(wallet) {
