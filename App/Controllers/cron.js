@@ -176,6 +176,7 @@ class CronController {
 			},
 			(blockCallback) => {
 				let currentBlock = ethRPC.eth.getBlock(currentBlockIndex + 1);
+				logger.info(lastBlockIndex);
 				logger.info(currentBlockIndex + 1);
 				logger.info(currentBlock);
 				currentBlockIndex = currentBlock.number;
