@@ -225,7 +225,9 @@ class CronController {
                                         outgoingCoin: amount,
                                         outgoingType: 'ETH',
                                         transaction: currentTransaction.hash,
-                                        fundAmount: resultAmount
+                                        fundAmount: resultAmount,
+	                                    maxCommission: maxCommission,
+	                                    tokenPrice: tokenPrice
                                     },
                                 }, err => {
                                     if(err) return next(err);
