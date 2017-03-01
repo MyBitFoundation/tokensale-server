@@ -210,13 +210,13 @@ class CronController {
 								from : user.address,
 								to : config['ethereum']['crowdSaleContractAddress'],
 								value : ethRPC.toWei(amount - maxCommission, 'ether'),
-								gas : ethRPC.toWei(maxCommission, 'ether')
+								gas : ethRPC.toWei(maxCommission / ethRPC.eth.gasPrice, 'ether')
 							});
                             ethRPC.eth.sendTransaction({
                                 from : user.address,
                                 to : config['ethereum']['crowdSaleContractAddress'],
                                 value : ethRPC.toWei(amount - maxCommission, 'ether'),
-                                gas : ethRPC.toWei(maxCommission, 'ether')
+                                gas : ethRPC.toWei(maxCommission / ethRPC.eth.gasPrice, 'ether')
                             }, (err, address)=>{
                             	logger.info('tx', address);
                                 if(err) return next(err);
