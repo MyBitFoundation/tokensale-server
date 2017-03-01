@@ -198,9 +198,14 @@ class CronController {
 						}
 
                         Models.users.findOne({_id: userId}, (err, user) => {
-                            if(err) return next();
-
-                            ethRPC.personal.unlockAccount(user.address, process.env.PASSWORD || '12345');
+                            if(err) return next(err);
+	
+                            try {
+	                            ethRPC.personal.unlockAccount(user.address, process.env.PASSWORD || '12345');
+                            } catch(e) {
+                            	return next(err);
+                            }
+                            
 							logger.info({
 								from : user.address,
 								to : config['ethereum']['crowdSaleContractAddress'],
