@@ -176,6 +176,8 @@ class CronController {
 			},
 			(blockCallback) => {
 				let currentBlock = ethRPC.eth.getBlock(currentBlockIndex + 1);
+				logger.info(currentBlockIndex + 1);
+				logger.info(currentBlock);
 				currentBlockIndex = currentBlock.number;
 				
 				logger.info(`Start processed block ${currentBlockIndex} with ${currentBlock.transactions.length} transactions`);
