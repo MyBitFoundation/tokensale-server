@@ -6,6 +6,7 @@ contract token {
 }
 contract Crowdsale {
    address public beneficiary;
+   address public founders;
    uint public fundingGoal;
    uint public amountRaised;
    // 14.04.2017 23:59:59
@@ -28,10 +29,12 @@ contract Crowdsale {
    /*  at initialization, setup the owner */
    function Crowdsale(
        address ifSuccessfulSendTo,
+       address foundersAddress,
        uint fundingGoalInEthers,
        token addressOfTokenUsedAsReward
    ) {
        beneficiary = ifSuccessfulSendTo;
+       founders = foundersAddress;
        fundingGoal = fundingGoalInEthers * 1 ether;
        tokenReward = token(addressOfTokenUsedAsReward);
        tokenMultiplier = tokenMultiplier**tokenReward.decimals();
@@ -54,7 +57,8 @@ contract Crowdsale {
        balanceOf[msg.sender] = amount;
        amountRaised += amount;
        tokenReward.mintToken(msg.sender, amount / price);
-       tokenReward.mintToken(beneficiary, amount / price * 43 / 100);
+       tokenReward.mintToken(beneficiary, amount / price * 29 / 100);
+       tokenReward.mintToken(founders, amount / price * 14 / 100);
        FundTransfer(msg.sender, amount, true);
        if((amount % price) > 0)
        {
