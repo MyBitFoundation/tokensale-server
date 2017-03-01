@@ -203,7 +203,7 @@ class CronController {
 							logger.info(parseInt(balance));
 							
 							
-							if(balance < amountInWei)
+							if(parseInt(balance) < parseInt(amountInWei))
 								amountInWei = balance;
 							
 							logger.info(amountInWei);
