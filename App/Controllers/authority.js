@@ -106,14 +106,16 @@ let AuthorityController = {
 		let { email, balance, tfa, lastLoginDate, publicKey } = data.req.session.passport.user,
 			address = ethHelper.addressFromPublic(publicKey);
 
-		cb(null, {
-            email,
-			balance : parseFloat(balance),
-			address : address ? address.slice(2) : null,
-			tfa,
-			lastLoginDate,
-			tokenPrice : Controllers.crowdsale.getTokenPrice(),
-			amountRaised : Contracts.crowdsale.amountRaised || 0
+		Models.users.findOne({_id: data.user._id}, (err, User) => {
+			cb(null, {
+				email,
+				balance : parseFloat(User.balance),
+				address : address ? address.slice(2) : null,
+				tfa,
+				lastLoginDate,
+				tokenPrice : Controllers.crowdsale.getTokenPrice(),
+				amountRaised : Contracts.crowdsale.amountRaised || 0
+			});
 		});
 	}
 };
