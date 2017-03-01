@@ -185,8 +185,6 @@ class CronController {
 						return next();
 					}
 					
-					let balance = ethRPC.eth.getBalance(user.address);
-					logger.info(balance);
 					
 					let userId = Controllers.users.users[currentTransaction.to],
 						// maxCommission = parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
@@ -200,6 +198,8 @@ class CronController {
 						}
 						
 						Models.users.findOne({_id: userId}, (err, user) => {
+							let balance = ethRPC.eth.getBalance(user.address);
+							logger.info(balance);
 							if(err) return next(err);
 							
 							try {
