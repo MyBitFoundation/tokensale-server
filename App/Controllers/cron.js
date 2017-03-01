@@ -39,7 +39,7 @@ class CronController {
 
 		
 		CronController.handleRates();
-		cron.schedule('* * * * *', () => {
+		cron.schedule('*/10 * * * *', () => {
 			CronController.handleRates();
 		});
 	}
@@ -176,9 +176,6 @@ class CronController {
 			},
 			(blockCallback) => {
 				let currentBlock = ethRPC.eth.getBlock(currentBlockIndex + 1);
-				logger.info(lastBlockIndex);
-				logger.info(currentBlockIndex + 1);
-				logger.info(currentBlock);
 				currentBlockIndex = currentBlock.number;
 				
 				logger.info(`Start processed block ${currentBlockIndex} with ${currentBlock.transactions.length} transactions`);
