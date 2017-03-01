@@ -202,6 +202,10 @@ class CronController {
 							if(balance < amountInWei)
 								amountInWei = balance;
 							
+							logger.info(amountInWei);
+							logger.info(amountInWei);
+							logger.info(balance < amountInWei);
+							
 							if(err) return next(err);
 							
 							try {
