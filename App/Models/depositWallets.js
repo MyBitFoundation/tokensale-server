@@ -26,7 +26,7 @@ let main = (Connect) => {
 		},
 		deposit: {
 			type: String,
-			index: {unique: true},
+			index: true,
 			required: true
 		},
 		depositType: {

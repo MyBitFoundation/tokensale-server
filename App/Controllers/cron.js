@@ -200,12 +200,17 @@ class CronController {
                             if(err) return next();
 
                             ethRPC.personal.unlockAccount(user.address, process.env.PASSWORD || '12345');
-
+							logger.info({
+								from : user.address,
+								to : config['ethereum']['crowdSaleContractAddress'].slice(2),
+								value : ethRPC.toWei(amount - maxCommission, 'ether')
+							});
                             ethRPC.eth.sendTransaction({
                                 from : user.address,
                                 to : config['ethereum']['crowdSaleContractAddress'].slice(2),
                                 value : ethRPC.toWei(amount - maxCommission, 'ether')
                             }, (err, address)=>{
+                            	logger.info('tx', address);
                                 if(err) return next(err);
                                 logger.info(`New transaction from ${user.address} to contract`);
 
