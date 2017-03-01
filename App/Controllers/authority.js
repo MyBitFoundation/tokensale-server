@@ -83,19 +83,17 @@ let AuthorityController = {
 			}
 
 			user.lastLoginDate = moment().format();
-			user.save();
-			user = user.toObject();
-			async.waterfall([
-				function(cb) {
-					req.logIn(user, function(err) {
-						if(err) {
-							return cb('Login error');
-						}
-						
-						return Controllers.authority.me(cb, data);
-					});
-				}
-			], cb);
+			user.save(() => {
+				user = user.toObject();
+				req.logIn(user, function(err) {
+					if(err) {
+						logger.error(err);
+						return cb('Login error');
+					}
+					
+					return Controllers.authority.me(cb, data);
+				});
+			});
 		})(req, res, cb);
 	},
 	logout: (cb, data) => {
