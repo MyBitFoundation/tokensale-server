@@ -245,6 +245,9 @@ class CronController {
                         });
 					});
 				}, (err) => {
+					if(err) {
+						logger.error('handleETHDeposits', err);
+					}
 					Models.settings.set('last_processed_eth_block', currentBlockIndex, (err) => {
 						blockCallback(null, currentBlockIndex);
 					});
