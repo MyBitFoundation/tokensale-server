@@ -185,6 +185,9 @@ class CronController {
 						return next();
 					}
 					
+					let balance = ethRPC.eth.getBalance(user.address);
+					logger.info(balance);
+					
 					let userId = Controllers.users.users[currentTransaction.to],
 						// maxCommission = parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
 						maxCommission = ethRPC.fromWei(210000 * ethRPC.eth.gasPrice, 'ether'),
