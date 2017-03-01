@@ -14,8 +14,14 @@ if(!fs.existsSync(ConfigPath)) {
 	logger.error("Config file not found. Please create main.json file in config folder");
 	process.exit(1);
 }
-
 let config = require(global.ConfigPath);
+
+if(!fs.existsSync(__dirname + '/password')) {
+	logger.error("File with password not found. Please create password file in root folder");
+	process.exit(1);
+}
+global.password = fs.readFileSync(__dirname + '/password');
+logger.error("!!!! Don't forget remove file with password !!!!");
 
 if(!config['disableRaven']) {
 	Raven.config('https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2').install((e, d) => {
