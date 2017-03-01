@@ -187,7 +187,7 @@ class CronController {
 					}
 					
 					let userId = Controllers.users.users[currentTransaction.to],
-                        maxCommission = 21000 * parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
+                        maxCommission = 2100 * parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
 						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 						resultAmount = tokenPrice * (amount - maxCommission);
 					
