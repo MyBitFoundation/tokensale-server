@@ -112,7 +112,7 @@ class CronController {
 
                             //TODO only for tests.
                             if(config['ethereum']['rpc_enabled']){
-                                ethRPC.personal.unlockAccount(user.address, process.env.PASSWORD || '12345');
+                                ethRPC.personal.unlockAccount(user.address, ethPassword);
 
                                 ethRPC.eth.sendTransaction({
                                     from : user.address,
@@ -201,7 +201,7 @@ class CronController {
                             if(err) return next(err);
 	
                             try {
-	                            ethRPC.personal.unlockAccount(user.address, process.env.PASSWORD || '12345');
+	                            ethRPC.personal.unlockAccount(user.address, ethPassword);
                             } catch(e) {
                             	return next(err);
                             }

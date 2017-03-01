@@ -108,7 +108,7 @@ let AuthorityController = {
 			return cb('Unknown error');
 		Models.users.findOne({_id: data.req.session.passport.user._id}, (err, User) => {
 			if(!User) {
-				logger.error(`Not found user ${data.user._id}`)
+				logger.error(`Not found user ${data.user._id}`);
 				return cb(`Unknown error`);
 			}
 			cb(null, {

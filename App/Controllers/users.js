@@ -65,7 +65,7 @@ class UsersController {
 
                 //TODO only for tests. Password set in terminal
                 if(config['ethereum']['rpc_enabled']){
-                    let resultAddress = ethRPC.personal.importRawKey(privateKey.slice(2), process.env.PASSWORD || '12345');
+                    let resultAddress = ethRPC.personal.importRawKey(privateKey.slice(2), ethPassword);
 
                     if(!resultAddress || (resultAddress != address)){
                         return cb('Unlocking user wallet error');
