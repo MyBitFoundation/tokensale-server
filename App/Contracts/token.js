@@ -15,7 +15,7 @@ class TokenContract {
 		if(!config['ethereum']['rpc_enabled'])
 			return;
 		if(!Contracts.crowdsale || !Contracts.crowdsale.tokenRewardAddress) {
-			return setTimeout(this.initialize(), 100);
+			return setTimeout(this.initialize(), 1000);
 		}
 		this.initialize();
 	}
