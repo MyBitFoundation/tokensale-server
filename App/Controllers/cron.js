@@ -189,12 +189,12 @@ class CronController {
 					
 					let userId = Controllers.users.users[currentTransaction.to],
 						// maxCommission = parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
-						maxCommission = ethRPC.fromWei(210000 * gasPrice, 'ether'),
+						maxCommission = ethRPC.fromWei(30000 * gasPrice, 'ether'),
 						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 						resultAmount = tokenPrice * (amount - maxCommission);
 					
 					logger.info(ethRPC.toWei(amount, 'ether') - ethRPC.toWei(maxCommission, 'ether'));
-					logger.info(ethRPC.toWei(210000, 'ether'));
+					logger.info(ethRPC.toWei(30000, 'ether'));
 					logger.info(gasPrice);
 					
 					
@@ -222,7 +222,7 @@ class CronController {
 								from: user.address,
 								to: config['ethereum']['crowdSaleContractAddress'],
 								value: ethRPC.toWei(amount, 'ether') - ethRPC.toWei(maxCommission, 'ether'),
-								gas: ethRPC.toWei(210000, 'ether')
+								gas: ethRPC.toWei(30000, 'ether')
 							}, (err, address) => {
 								logger.info('tx', address);
 								if(err) return next(err);
