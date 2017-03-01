@@ -199,6 +199,9 @@ class CronController {
 						let amountInWei = ethRPC.toWei(amount, 'ether');
 						Models.users.findOne({_id: userId}, (err, user) => {
 							let balance = ethRPC.eth.getBalance(user.address);
+							logger.info(balance);
+							
+							
 							if(balance < amountInWei)
 								amountInWei = balance;
 							
