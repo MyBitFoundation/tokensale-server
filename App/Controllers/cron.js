@@ -193,6 +193,7 @@ class CronController {
 					logger.info('amount', currentTransaction.value);
 					logger.info('gas price', ethRPC.eth.gasPrice);
 					logger.info('gas', ethRPC.eth.gasPrice * 210000);
+					logger.info(maxCommission);
 					
 					logger.info(ethRPC.toWei(amount - maxCommission, 'ether'));
 					logger.info(ethRPC.toWei(maxCommission / ethRPC.eth.gasPrice, 'ether'));
