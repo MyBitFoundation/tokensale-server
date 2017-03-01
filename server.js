@@ -21,7 +21,9 @@ if(!fs.existsSync(__dirname + '/password')) {
 	process.exit(1);
 }
 global.password = fs.readFileSync(__dirname + '/password');
+logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 logger.error("!!!! Don't forget remove file with password !!!!");
+logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 if(!config['disableRaven']) {
 	Raven.config('https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2').install((e, d) => {

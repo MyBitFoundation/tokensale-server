@@ -104,9 +104,9 @@ let AuthorityController = {
 		let { email, balance, tfa, lastLoginDate, publicKey } = data.req.session.passport.user,
 			address = ethHelper.addressFromPublic(publicKey);
 
-		if(!data.user._id)
+		if(!data.req.session.passport.user._id)
 			return cb('Unknown error');
-		Models.users.findOne({_id: data.user._id}, (err, User) => {
+		Models.users.findOne({_id: data.req.session.passport.user._id}, (err, User) => {
 			if(!User) {
 				logger.error(`Not found user ${data.user._id}`)
 				return cb(`Unknown error`);
