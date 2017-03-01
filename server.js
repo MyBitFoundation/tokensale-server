@@ -18,7 +18,7 @@ if(!fs.existsSync(ConfigPath)) {
 let config = require(global.ConfigPath);
 
 if(!config['disableRaven']) {
-	Raven.config('https://fd00c9c333dd4940aaf8e59ff3447cf3:af84b3d2ac694e508e28b4c281d617e8@sentry.io/140974').install((e, d) => {
+	Raven.config('https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2').install((e, d) => {
 		logger.error(d);
 		process.exit(1);
 	});
