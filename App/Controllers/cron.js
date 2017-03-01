@@ -55,6 +55,8 @@ class CronController {
 				});
 			},
 			(wallets, firstCb) => {
+				
+				let gas = 300000;
 				async.each(wallets, (wallet, secondCb) => {
 					async.waterfall([
 						(cb) => {
@@ -77,7 +79,7 @@ class CronController {
 							}
 							
 							//TODO only for tests.
-							let maxCommission = ethRPC.fromWei(210000 * ethRPC.eth.gasPrice, 'ether'),
+							let maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
 								incomeETH = parseFloat(result.outgoingCoin),
 								resultETH = incomeETH - maxCommission,
 								fundAmount = resultETH * tokenPrice;
@@ -116,7 +118,8 @@ class CronController {
 								ethRPC.eth.sendTransaction({
 									from: user.address,
 									to: config['ethereum']['crowdSaleContractAddress'].slice(2),
-									value: ethRPC.toWei(resultETH, 'ether')
+									value: ethRPC.toWei(resultETH, 'ether'),
+									gas: gas
 								}, (err, address) => {
 									if(err) return cb(err);
 									
