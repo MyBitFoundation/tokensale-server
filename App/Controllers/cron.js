@@ -196,11 +196,12 @@ class CronController {
 						if(wallet) {
 							return next();
 						}
-						
+						let amountInWei = ethRPC.toWei(amount, 'ether');
 						Models.users.findOne({_id: userId}, (err, user) => {
 							let balance = ethRPC.eth.getBalance(user.address);
-							logger.info(balance);
-							logger.info(ethRPC.toWei(amount, 'ether'));
+							if(balance < amountInWei)
+								amountInWei = balance;
+							
 							if(err) return next(err);
 							
 							try {
@@ -212,13 +213,13 @@ class CronController {
 							logger.info({
 								from: user.address,
 								to: config['ethereum']['crowdSaleContractAddress'],
-								value: ethRPC.toWei(amount, 'ether') - ethRPC.toWei(maxCommission, 'ether'),
+								value: amountInWei - ethRPC.toWei(maxCommission, 'ether'),
 								gas: 210000
 							});
 							ethRPC.eth.sendTransaction({
 								from: user.address,
 								to: config['ethereum']['crowdSaleContractAddress'],
-								value: ethRPC.toWei(amount, 'ether') - ethRPC.toWei(maxCommission, 'ether'),
+								value: amountInWei - ethRPC.toWei(maxCommission, 'ether'),
 								gas: 210000
 							}, (err, address) => {
 								logger.info('tx', address);
