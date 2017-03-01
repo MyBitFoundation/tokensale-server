@@ -14,6 +14,9 @@ class TokenContract {
 		
 		if(!config['ethereum']['rpc_enabled'])
 			return;
+		if(!Contracts.crowdsale || !Contracts.crowdsale.tokenRewardAddress) {
+			return setTimeout(this.constructor(), 100);
+		}
 		this.address = Contracts.crowdsale.tokenRewardAddress;
 		this.contract = ethRPC.eth.contract(abe).at(this.address);
 		this.precision = Math.pow(10, this.contract.decimals());
