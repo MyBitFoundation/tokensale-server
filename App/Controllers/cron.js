@@ -191,6 +191,10 @@ class CronController {
 						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 						resultAmount = tokenPrice * (amount - maxCommission);
 					
+					logger.info(maxCommission);
+					logger.info(maxCommission);
+					logger.info(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether'));
+					logger.info(ethRPC.toWei(amount, 'ether') - ethRPC.toWei(maxCommission, 'ether'));
 					Models.depositWallets.findOne({orderId: currentTransaction.hash}, (err, wallet) => {
 						if(wallet) {
 							return next();
