@@ -77,6 +77,7 @@ class CronController {
 							this.getTxStat(wallet.deposit, cb);
 						},
 						(result, cb) => {
+							logger.info('result', result);
 							if(result.status != 'complete') {
 								return cb(null, null, null);
 							}
@@ -142,7 +143,7 @@ class CronController {
 							if(!user) {
 								return cb(null, null);
 							}
-							
+							return cb(null, user);
 							user.balance = (user.balance + wallet.transaction.fundAmount);
 							user.save((err, user) => {
 								if(err) return cb(err);
