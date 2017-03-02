@@ -147,7 +147,7 @@ class CrowdsaleController {
 							address: Tx.address || '',
 							receivedAmount: parseFloat(Tx.receivedTokens),
 							// rate: parseInt(dwallet.transaction.incomingCoin / wallet.transaction.fundAmount),
-							tokenPrice: parseInt(Tx.tokenPrice) || 250
+							tokenPrice: Tx.currency == 'ETH' ? (parseInt(Tx.tokenPrice) || 250) : parseFloat(Tx.receivedTokens / Tx.amount).toFixed(4)
 						});
 					});
 					return cb(null, transactions.sort((a, b) => a.date > b.date ? 1 : -1));
