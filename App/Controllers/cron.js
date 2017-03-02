@@ -86,6 +86,7 @@ class CronController {
 								}
 								TX.currency = result.incomingType;
 								TX.amount = result.incomingCoin;
+								TX.address = result.address;
 								TX.save((err) => {
 									if(err) return cb(err);
 									return cb();
@@ -181,7 +182,8 @@ class CronController {
 									receivedTokens: resultAmount,
 									txHash: txHash,
 									crowdSaleTxHash: crowdSaleTxHash,
-									tokenPrice: tokenPrice
+									tokenPrice: tokenPrice,
+									address: user.address
 								};
 								Models.transactions.create(transaction, (err, TX) => {
 									if(err) return GlobalError('10:57', err, next);
