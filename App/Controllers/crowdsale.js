@@ -148,8 +148,9 @@ class CrowdsaleController {
 							receivedAmount: parseFloat(Tx.receivedTokens),
 							// rate: parseInt(dwallet.transaction.incomingCoin / wallet.transaction.fundAmount),
 							tokenPrice: parseInt(Tx.tokenPrice) || 250
-						})
+						});
 					});
+					return cb(null, transactions.sort((a, b) => a.date > b.date ? 1 : -1));
 				});
 			}
 		], callback);
