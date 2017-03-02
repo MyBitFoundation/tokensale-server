@@ -150,7 +150,7 @@ class CrowdsaleController {
 							tokenPrice: Tx.currency == 'ETH' ? (parseInt(Tx.tokenPrice) || 250) : parseFloat(Tx.receivedTokens / Tx.amount).toFixed(4)
 						});
 					});
-					return cb(null, transactions.sort((a, b) => a.date > b.date ? 1 : -1));
+					return cb(null, transactions);
 				});
 			}
 		], callback);
