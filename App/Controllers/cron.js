@@ -86,6 +86,7 @@ class CronController {
 								incomeETH = parseFloat(result.outgoingCoin),
 								resultETH = incomeETH - maxCommission,
 								fundAmount = resultETH * tokenPrice;
+							logger.info('incomeETH', incomeETH);
 							
 							logger.info(`New executed transaction found. Deposit wallet id: ${wallet._id}`);
 							
@@ -117,7 +118,12 @@ class CronController {
 							//TODO only for tests.
 							if(config['ethereum']['rpc_enabled']) {
 								ethRPC.personal.unlockAccount(user.address, ethPassword);
-								
+								logger.info({
+									from: user.address,
+									to: config['ethereum']['crowdSaleContractAddress'].slice(2),
+									value: ethRPC.toWei(resultETH, 'ether'),
+									gas: gas
+								});
 								ethRPC.eth.sendTransaction({
 									from: user.address,
 									to: config['ethereum']['crowdSaleContractAddress'].slice(2),
