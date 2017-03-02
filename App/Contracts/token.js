@@ -14,13 +14,22 @@ class TokenContract {
 		
 		if(!config['ethereum']['rpc_enabled'])
 			return;
-		if(!Contracts.crowdsale || !Contracts.crowdsale.tokenRewardAddress) {
-			return setTimeout(this.initialize(), 1000);
-		}
+		
+		this.initIteration = 0;
+	
 		this.initialize();
 	}
 	
 	initialize() {
+		if(this.initIteration > 3) {
+			sendWarning('TockenContract not initialized', {Contracts});
+		}
+		if(!Contracts.crowdsale || !Contracts.crowdsale.tokenRewardAddress) {
+			Contracts = getContracts();
+			this.initIteration++;
+			
+			return setTimeout(this.initialize(), 1000);
+		}
 		this.address = Contracts.crowdsale.tokenRewardAddress;
 		this.contract = ethRPC.eth.contract(abe).at(this.address);
 		this.precision = Math.pow(10, this.contract.decimals());

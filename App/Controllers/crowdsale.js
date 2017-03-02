@@ -163,7 +163,7 @@ class CrowdsaleController {
 					}
 				}, (error, response, body) => {
 					if(error || response.statusCode != 200) {
-						cb('Api error');
+						cb('Create transaction wallet error: ' + error);
 					} else if(body.error) {
 						cb('Api error' + body.error);
 					} else {

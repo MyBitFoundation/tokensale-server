@@ -23,10 +23,8 @@ class CronController {
 	
 	init() {
 		
-		CronController.handleDeposits();
-		cron.schedule('* * * * *', () => {
-			CronController.handleDeposits();
-		});
+		this.handleDeposits();
+		cron.schedule('* * * * *', () => this.handleDeposits());
 		
 		//TODO only for tests.
 		if(config['ethereum']['rpc_enabled']) {
@@ -43,7 +41,23 @@ class CronController {
 		});
 	}
 	
-	static handleDeposits() {
+	getTxStat(deposit, cb) {
+		request({
+			method: 'GET',
+			uri: `https://shapeshift.io/txStat/${deposit}`
+		}, (error, response, body) => {
+			if(error || response.statusCode != 200) {
+				sendWarning('Get txStat error', error);
+				setTimeout(() => this.getTxStat(deposit, cb), 2000);
+			} else if(body.error) {
+				cb(body.error);
+			} else {
+				cb(null, JSON.parse(body));
+			}
+		});
+	}
+	
+	handleDeposits() {
 		let tokenPrice = Controllers.crowdsale.getTokenPrice();
 		
 		async.waterfall([
@@ -60,18 +74,7 @@ class CronController {
 				async.each(wallets, (wallet, secondCb) => {
 					async.waterfall([
 						(cb) => {
-							request({
-								method: 'GET',
-								uri: `https://shapeshift.io/txStat/${wallet.deposit}`
-							}, (error, response, body) => {
-								if(error || response.statusCode != 200) {
-									cb('Api error');
-								} else if(body.error) {
-									cb(body.error);
-								} else {
-									cb(null, JSON.parse(body));
-								}
-							});
+							this.getTxStat(wallet.deposit, cb);
 						},
 						(result, cb) => {
 							if(result.status != 'complete') {
@@ -183,6 +186,8 @@ class CronController {
 				logger.info(`Start processed block ${currentBlockIndex} with ${currentBlock.transactions.length} transactions`);
 				async.eachSeries(currentBlock.transactions, (txHash, next) => {
 					let currentTransaction = ethRPC.eth.getTransaction(txHash);
+					if(!currentTransaction)
+						return next();
 					
 					if(!Controllers.users.users.hasOwnProperty(currentTransaction.to)) {
 						return next();
@@ -333,13 +338,14 @@ class CronController {
 							uri: `https://shapeshift.io/rate/eth_${key.toLowerCase()}`
 						}, (error, response, body) => {
 							if(error || response.statusCode != 200) {
-								cb('Api error');
+								cb('Get rate from shapeshift error: ' + error);
 							} else if(body.error) {
 								cb(body.error);
 							} else {
 								let info = JSON.parse(body);
 								
-								if(!info.rate || !parseFloat(info.rate)) return cb('Api error');
+								if(!info.rate || !parseFloat(info.rate))
+									return cb('Api error');
 								
 								cb(null, {key, rate: new BigNumber(parseFloat(info.rate))});
 							}

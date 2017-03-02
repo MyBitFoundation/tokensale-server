@@ -26,7 +26,9 @@ logger.error("!!!! Don't forget remove file with password !!!!");
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 if(!config['disableRaven']) {
-	Raven.config('https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2').install((e, d) => {
+	Raven.config('https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2', {
+		autoBreadcrumbs: true
+	}).install((e, d) => {
 		logger.error(d);
 		process.exit(1);
 	});
@@ -139,5 +141,16 @@ web3._extend({
 });
 
 global.ethRPC = web3;
+global.raven = Raven;
+global.sendWarning = (message, data) => {
+	logger.warn(message, data);
+	if(!Raven || config['disableRaven']) {
+		return;
+	}
+	Raven.captureMessage(message, {
+		level: 'warning',
+		extra: { error: data }
+	});
+};
 
 Server.init();
