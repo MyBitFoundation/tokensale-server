@@ -19,18 +19,16 @@ class CronController {
 	constructor() {
 		logger.info('Cron controller initialized');
 		this.lastProcessedBlockIndex = 0;
+		this.processedTransactions = {};
 	}
 	
 	init() {
-		
-		this.handleDeposits();
-		cron.schedule('* * * * *', () => this.handleDeposits());
+		this.handleDepositsFromShapeShift();
 		
 		//TODO only for tests.
 		if(config['ethereum']['rpc_enabled']) {
 			Models.settings.get('last_processed_eth_block', (err, result) => {
 				this.lastProcessedBlockIndex = parseInt(result || config['ethereum']['firstBlockForProcessing']);
-				
 				this.handleETHDeposits();
 			});
 		}
@@ -57,9 +55,7 @@ class CronController {
 		});
 	}
 	
-	handleDeposits() {
-		let tokenPrice = Controllers.crowdsale.getTokenPrice();
-		
+	handleDepositsFromShapeShift() {
 		async.waterfall([
 			(cb) => {
 				Models.depositWallets.find({
@@ -69,105 +65,40 @@ class CronController {
 				});
 			},
 			(wallets, firstCb) => {
-				
-				let gas = 300000;
-				async.each(wallets, (wallet, secondCb) => {
+				async.eachSeries(wallets, (wallet, secondCb) => {
 					async.waterfall([
 						(cb) => {
 							this.getTxStat(wallet.deposit, cb);
 						},
 						(result, cb) => {
-							logger.info('result', result);
-							if(result.status != 'complete') {
+							if(result.status != 'complete' || this.processedTransactions[result.transaction]) {
 								return cb(null, null, null);
 							}
-							
-							//TODO only for tests.
-							let maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
-								incomeETH = parseFloat(result.outgoingCoin),
-								resultETH = incomeETH - maxCommission,
-								fundAmount = resultETH * tokenPrice;
-							logger.info('incomeETH', incomeETH);
-							
-							logger.info(`New executed transaction found. Deposit wallet id: ${wallet._id}`);
-							
-							wallet.executedAt = Date.now();
-							wallet.transaction = {
-								withdraw: result.withdraw,
-								incomingCoin: result.incomingCoin,
-								incomingType: result.incomingType,
-								address: result.address,
-								outgoingCoin: result.outgoingCoin,
-								outgoingType: result.outgoingType,
-								transaction: result.transaction,
-								fundAmount: fundAmount
-							};
-							
-							Models.users.findOne({
-								_id: wallet.userId
-							}, (err, user) => {
+							Models.transactions.findOne({
+								txHash: result.transaction
+							}, (err, TX) => {
 								if(err) return cb(err);
-								
-								cb(null, user, resultETH);
-							});
-						},
-						(user, resultETH, cb) => {
-							if(!user || resultETH === null) {
-								return cb(null, null);
-							}
-							
-							//TODO only for tests.
-							if(config['ethereum']['rpc_enabled']) {
-								ethRPC.personal.unlockAccount(user.address, ethPassword);
-								logger.info({
-									from: user.address,
-									to: config['ethereum']['crowdSaleContractAddress'].slice(2),
-									value: ethRPC.toWei(resultETH, 'ether'),
-									gas: gas
-								});
-								ethRPC.eth.sendTransaction({
-									from: user.address,
-									to: config['ethereum']['crowdSaleContractAddress'].slice(2),
-									value: ethRPC.toWei(resultETH, 'ether'),
-									gas: gas
-								}, (err, address) => {
+								if(!TX) return cb();
+								this.processedTransactions[result.transaction] = true;
+								// already processed
+								if(TX.currency != 'ETH') {
+									return cb();
+								}
+								TX.currency = result.incomingType;
+								TX.amount = result.incomingCoin;
+								TX.save((err) => {
 									if(err) return cb(err);
-									
-									cb(null, user);
+									return cb();
 								});
-							} else {
-								cb(null, user)
-							}
-						},
-						(user, cb) => {
-							if(!user) {
-								return cb(null, null);
-							}
-							return cb(null, user);
-							user.balance = (user.balance + wallet.transaction.fundAmount);
-							user.save((err, user) => {
-								if(err) return cb(err);
-								
-								logger.info(`Fund user ${user._id} balance with ${wallet.transaction.fundAmount} finney`);
-								cb(null, user);
 							});
-						},
-						(user, cb) => {
-							if(!user) {
-								return cb();
-							}
-							
-							wallet.save((err, wallet) => {
-								return cb();
-							});
-						},
+						}
 					], secondCb);
 				}, firstCb)
 			}
 		], (err) => {
 			if(err) return GlobalError('33033044', err);
+			setTimeout(() => this.handleDepositsFromShapeShift(), 60 * 1000);
 		});
-		
 	}
 	
 	handleETHDeposits() {
@@ -203,13 +134,12 @@ class CronController {
 					let gas = 300000;
 					
 					let userId = Controllers.users.users[currentTransaction.to],
-						// maxCommission = parseFloat(ethRPC.fromWei(ethRPC.eth.gasPrice, 'ether').toString(10)),
 						maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
 						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 						resultAmount = tokenPrice * (amount - maxCommission);
 					
-					Models.depositWallets.findOne({orderId: currentTransaction.hash}, (err, wallet) => {
-						if(wallet) {
+					Models.transactions.findOne({txHash}, (err, transaction) => {
+						if(transaction) {
 							return next();
 						}
 						let amountInWei = ethRPC.toWei(amount, 'ether');
@@ -238,46 +168,24 @@ class CronController {
 								to: config['ethereum']['crowdSaleContractAddress'],
 								value: amountInWei - ethRPC.toWei(maxCommission, 'ether'),
 								gas: gas
-							}, (err, address) => {
-								logger.info('tx', address);
+							}, (err, crowdSaleTxHash) => {
+								logger.info('tx', crowdSaleTxHash);
 								if(err) return next(err);
 								logger.info(`New transaction from ${user.address} to contract`);
 								
-								Models.depositWallets.create({
+								let transaction = {
 									userId: userId,
-									orderId: currentTransaction.hash,
-									deposit: currentTransaction.to.slice(2),
-									depositType: 'ETH',
-									extraInfo: null,
-									executed: true,
-									executedAt: Date.now(),
-									transaction: {
-										withdraw: currentTransaction.hash,
-										incomingCoin: amount,
-										incomingType: 'ETH',
-										address: user.address,
-										outgoingCoin: amount,
-										outgoingType: 'ETH',
-										transaction: currentTransaction.hash,
-										fundAmount: resultAmount,
-										maxCommission: maxCommission,
-										tokenPrice: tokenPrice
-									},
-								}, err => {
-									if(err) {
-										return next(err);
-									}
-									logger.info(`New ETH wallet created by user ${userId}`);
+									amount: ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'),
+									ethAmount: ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'),
+									currency: 'ETH',
+									receivedTokens: resultAmount,
+									txHash: txHash,
+									crowdSaleTxHash: crowdSaleTxHash,
+									tokenPrice: tokenPrice
+								};
+								Models.transactions.create(transaction, (err, TX) => {
+									if(err) return GlobalError('10:57', err, next);
 									return next();
-									
-									//TODO: Logic transferred to Contracts/token.js (update only after reward in contract)
-									user.balance = parseFloat(user.balance) + resultAmount;
-									user.save(err => {
-										if(err) return next();
-										logger.info(`Fund user ${user._id} balance with ${resultAmount} finney`);
-										
-										next();
-									});
 								});
 							});
 						});

@@ -26,18 +26,6 @@ class CrowdsaleController {
 	}
 	
 	getTokenPrice() {
-		// let endDate = Date.parse(config['deadline']),
-		//     currentDate = Date.now(),
-		//     dayTimestamp = 24 * 60 * 60 * 1000;
-		//
-		// if(endDate - currentDate > 3 * 7 * dayTimestamp) {
-		//     return 100;
-		// } else if(endDate - currentDate > 7 * dayTimestamp) {
-		//     return 150;
-		// } else {
-		//     return 250;
-		// }
-		
 		if(!Contracts.crowdsale.amountRaised || Contracts.crowdsale.amountRaised < 2000) {
 			return 250;
 		} else if(Contracts.crowdsale.amountRaised < 8000) {
