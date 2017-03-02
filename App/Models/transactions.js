@@ -40,6 +40,7 @@ let main = (Connect) => {
 				unique: true
 			}
 		},
+		address: String,
 		tokenPrice: Number
 	}, {
 		timestamps: true

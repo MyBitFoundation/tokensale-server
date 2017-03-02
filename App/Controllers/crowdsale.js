@@ -111,26 +111,48 @@ class CrowdsaleController {
 			sort = data._get.sort;
 		}
 		
-		Models.depositWallets.find({
-			userId: userId,
-			executedAt: {$ne: null}
-		}, null, {sort: {executedAt: sort}}, (err, wallets) => {
-			let transactions = wallets.map((wallet) => {
-				return {
-					date: moment(wallet.executedAt).format('YYYY-MM-DD HH:mm:ss'),
-					sentAmount: parseFloat(wallet.transaction.incomingCoin - (wallet.transaction.maxCommission || 0)),
-					sentCoinType: wallet.transaction.incomingType,
-					transactionId: wallet.transaction.transaction,
-					address: wallet.transaction.withdraw,
-					receivedAmount: parseFloat(wallet.transaction.fundAmount),
-					rate: parseFloat(wallet.transaction.incomingCoin / wallet.transaction.fundAmount),
-					tokenPrice: parseInt(wallet.transaction.tokenPrice) || 250
-				};
-			});
-			
-			callback(null, transactions);
-		});
-		
+		async.waterfall([
+			// TODO: support deprecated logic
+			cb => {
+				Models.depositWallets.find({
+					userId: userId,
+					executedAt: {$ne: null}
+				}, null, {sort: {executedAt: sort}}, (err, wallets) => {
+					let transactions = wallets.map((wallet) => {
+						return {
+							date: moment(wallet.executedAt).format('YYYY-MM-DD HH:mm:ss'),
+							sentAmount: parseFloat(wallet.transaction.incomingCoin - (wallet.transaction.maxCommission || 0)),
+							sentCoinType: wallet.transaction.incomingType,
+							transactionId: wallet.transaction.transaction,
+							address: wallet.transaction.withdraw,
+							receivedAmount: parseFloat(wallet.transaction.fundAmount),
+							rate: parseFloat(wallet.transaction.incomingCoin / wallet.transaction.fundAmount),
+							tokenPrice: parseInt(wallet.transaction.tokenPrice) || 250
+						};
+					});
+					
+					cb(null, transactions);
+				});
+			},
+			(transactions, cb) => {
+				Models.transactions.find({
+					userId: userId
+				}, (err, list) => {
+					list.forEach(Tx => {
+						transactions.push({
+							date: moment(Tx.createdAt).format('YYYY-MM-DD HH:mm:ss'),
+							sentAmount: parseFloat(Tx.amount),
+							sentCoinType: Tx.currency,
+							transactionId: Tx.txHash,
+							address: Tx.address || '',
+							receivedAmount: parseFloat(Tx.receivedTokens),
+							// rate: parseInt(dwallet.transaction.incomingCoin / wallet.transaction.fundAmount),
+							tokenPrice: parseInt(Tx.tokenPrice) || 250
+						})
+					});
+				});
+			}
+		], callback);
 	}
 	
 	rates(callback, data) {
