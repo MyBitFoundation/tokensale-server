@@ -258,7 +258,7 @@ class CronController {
 								logger.warn('Get rate from shapeshift error: ' + error);
 								cb('Get rate from shapeshift error: ' + error);
 							} else if(body.error) {
-								cb('Get rate from shapeshift error: ' + body.error);
+								logger.warn('Get rate from shapeshift error: ' + body.error);
 								cb(body.error);
 							} else {
 								let info = JSON.parse(body);
