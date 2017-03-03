@@ -244,39 +244,39 @@ class CronController {
 		
 		async.parallel({
 			crypto: (callback) => {
-				async.parallel(Object.keys(rates.crypto).map((key) => {
-					return (cb) => {
-						if(key == 'ETH') {
-							return cb(null, {key, rate: new BigNumber(1)});
-						}
-						
-						request({
-							method: 'GET',
-							uri: `https://shapeshift.io/rate/eth_${key.toLowerCase()}`
-						}, (error, response, body) => {
-							if(error || response.statusCode != 200) {
-								logger.warn('Get rate from shapeshift error: ' + error);
-								cb('Get rate from shapeshift error: ' + error);
-							} else if(body.error) {
-								logger.warn('Get rate from shapeshift error: ' + body.error);
-								cb(body.error);
-							} else {
-								let info = JSON.parse(body);
-								
-								if(!info.rate || !parseFloat(info.rate))
-									return cb('Api error');
-								
-								cb(null, {key, rate: new BigNumber(parseFloat(info.rate))});
+				let cryptoRates = [];
+				async.eachSeries(Object.keys(rates.crypto), (name, next) => {
+					if(name == 'ETH') {
+						cryptoRates.push([name, new BigNumber(1)]);
+						return next();
+					}
+					request({
+						method: 'GET',
+						uri: `https://shapeshift.io/rate/eth_${name.toLowerCase()}`
+					}, (error, response, body) => {
+						if(error || response.statusCode != 200) {
+							logger.warn('Get rate from shapeshift error: ' + error);
+							next();
+						} else if(body.error) {
+							logger.warn('Get rate from shapeshift error: ' + body.error);
+							next();
+						} else {
+							let info = JSON.parse(body);
+							
+							if(!info.rate || !parseFloat(info.rate)) {
+								logger.warn('Get crypto rate return null', info);
+								return next();
 							}
-						});
-					}
-				}), (err, results) => {
-					if(err) {
-						return callback(err);
-					}
-					callback(null, Object.assign({}, ...results.map((info) => {
-						return {[info.key]: info.rate.div(tokenPrice).toFixed(6)};
-					})));
+							cryptoRates.push([name, new BigNumber(parseFloat(info.rate))]);
+							next();
+						}
+					});
+				}, (err) => {
+					let result = {};
+					cryptoRates.each(row => {
+						result[row[0]] = row[1].div(tokenPrice).toFixed(6);
+					});
+					callback(null, result);
 				});
 			},
 			fiat: (callback) => {
