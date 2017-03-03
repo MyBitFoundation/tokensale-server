@@ -264,7 +264,7 @@ class CronController {
 							let info = JSON.parse(body);
 							
 							if(!info.rate || !parseFloat(info.rate)) {
-								logger.warn('Get crypto rate return null', info);
+								logger.warn('Get crypto rate return null', `eth_${name.toLowerCase()}`, info);
 								return next();
 							}
 							cryptoRates.push([name, new BigNumber(parseFloat(info.rate))]);
@@ -337,6 +337,7 @@ class CronController {
 				});
 			}
 		}, (err, rates) => {
+			logger.info(rates);
 			logger.info(`Rates updated`);
 			if(rates.crypto)
 				Controllers.crowdsale.ratesData.crypto = rates.crypto;
