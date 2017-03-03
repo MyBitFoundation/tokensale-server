@@ -255,6 +255,7 @@ class CronController {
 							uri: `https://shapeshift.io/rate/eth_${key.toLowerCase()}`
 						}, (error, response, body) => {
 							if(error || response.statusCode != 200) {
+								logger.warn('Get rate from shapeshift error: ' + error);
 								cb('Get rate from shapeshift error: ' + error);
 							} else if(body.error) {
 								cb(body.error);
