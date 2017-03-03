@@ -273,7 +273,7 @@ class CronController {
 					});
 				}, (err) => {
 					let result = {};
-					cryptoRates.each(row => {
+					cryptoRates.forEach(row => {
 						result[row[0]] = row[1].div(tokenPrice).toFixed(6);
 					});
 					callback(null, result);
