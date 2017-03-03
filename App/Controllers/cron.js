@@ -336,7 +336,10 @@ class CronController {
 			}
 		}, (err, rates) => {
 			logger.info(`Rates updated`);
-			Controllers.crowdsale.ratesData = rates;
+			if(rates.crypto)
+				Controllers.crowdsale.ratesData.crypto = rates.crypto;
+			if(rates.fiat)
+				Controllers.crowdsale.ratesData.fiat = rates.fiat;
 		});
 	}
 }
