@@ -48,7 +48,7 @@ class CrowdsaleController {
 			let address = ethHelper.addressFromPublic(publicKey);
 			
 			return callback(null, (publicKey && address) ? {
-					address: address.slice(2),
+					address: address,
 					type: 'ETH'
 				} : null);
 		}
