@@ -102,14 +102,15 @@ class UsersController {
 
         let { email, password } = req.user;
 
-        if(!passwordHash.verify(_post.password_old, password)){
-        	return callback('Incorrect password');
-		}
-
         Models.users.findOne({ email }, (err, user) => {
             if(!user) return callback(`User with email ${email} is not exist`);
 
+            if(!passwordHash.verify(_post.password_old, user.password)){
+                return callback('Incorrect password');
+            }
+
             user.password = passwordHash.generate(_post.password_new);
+            
             user.save((err, user)=>{
                 if(err) return callback(`Updating user error`);
 
