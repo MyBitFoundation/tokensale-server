@@ -89,7 +89,23 @@ let APIController = {
 				cb => {
 					if(isPublic) return cb();
 					if(!req.isAuthenticated()) return cb('User not logged', 403);
-					return cb();
+
+                    Models.users.findOne({ email : req.user.email }, (err, user) => {
+                        if(err) {
+                            return cb(err);
+                        }
+                        if(!user) {
+                            return cb('User not logged', 403);
+                        }
+
+                        if(req.user.password != user.password || req.user.tfa != user.tfa){
+                            req.logout();
+                        	req.session.destroy();
+                            return cb('User not logged', 403);
+						}
+
+                        return cb();
+					});
 				},
 				// run method
 				cb => {

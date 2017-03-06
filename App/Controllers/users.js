@@ -110,7 +110,7 @@ class UsersController {
             }
 
             user.password = passwordHash.generate(_post.password_new);
-            
+
             user.save((err, user)=>{
                 if(err) return callback(`Updating user error`);
 
