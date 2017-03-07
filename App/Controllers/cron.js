@@ -34,7 +34,7 @@ class CronController {
 		}
 		
 		CronController.handleRates();
-		cron.schedule('*/10 * * * *', () => {
+		cron.schedule('0 0 * * *', () => {
 			CronController.handleRates();
 		});
 	}
