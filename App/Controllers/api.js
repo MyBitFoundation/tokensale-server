@@ -85,6 +85,7 @@ let APIController = {
 		}
 		
 		APIController.app[type](route, (req, res) => {
+			logger.info('Start request', route);
 			async.waterfall([
 				cb => {
 					if(isPublic) return cb();
