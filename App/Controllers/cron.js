@@ -239,7 +239,9 @@ class CronController {
 				JPY: null
 			}
 		};
-		
+
+		let timestamp = Math.round(Date.now()/1000 - 2*60*60);
+
 		let tokenPrice = Controllers.crowdsale.getTokenPrice();
 		
 		async.parallel({
@@ -280,65 +282,118 @@ class CronController {
 				});
 			},
 			fiat: (callback) => {
-				async.parallel({
-					fiat_usd: (innerCallback) => {
-						async.waterfall([
-							(cb) => {
-								request({
-									method: 'GET',
-									uri: `http://api.fixer.io/latest?base=USD`
-								}, (error, response, body) => {
-									if(error || response.statusCode != 200) {
-										cb('fixer.io api error');
-									} else {
-										cb(null, JSON.parse(body));
-									}
-								});
-							},
-							(info, cb) => {
-								fx.rates = info.rates;
-								fx.rates['USD'] = 1;
-								
-								cb(null, Object.keys(rates.fiat).map((key) => {
-									return {key, rate: new BigNumber(fx(1).from('USD').to(key))}
-								}));
-							}
-						], innerCallback);
-					},
-					usd_eth: (innerCallback) => {
-						async.waterfall([
-							(cb) => {
-								request({
-									method: 'GET',
-									uri: `https://api.coinmarketcap.com/v1/ticker/ethereum/`
-								}, (error, response, body) => {
-									if(error || response.statusCode != 200) {
-										cb('coinmarketcap.com api error');
-									} else {
-										cb(null, JSON.parse(body));
-									}
-								});
-							},
-							(info, cb) => {
-								if(!info[0] || !info[0]['price_usd']) {
-									return cb('coinmarketcap.com api error');
-								}
-								
-								cb(null, new BigNumber(info[0]['price_usd']));
-							}
-						], innerCallback);
-					}
-				}, (err, results) => {
-					if(err) return callback(err);
-					
-					callback(null, Object.assign({}, ...results.fiat_usd.map((info) => {
-						return {[info.key]: (info.rate * results.usd_eth / tokenPrice).toFixed(6)};
-					})));
-				});
+                if(config.hasOwnProperty('bravenewcoin-key')){
+                    let fiatRates = [];
+                    async.eachSeries(Object.keys(rates.fiat), (name, next) => {
+                        request({
+                            headers: {
+                                'X-Mashape-Key'	: config['bravenewcoin-key'],
+                                'Accept'		: 'application/json'
+                            },
+                            method: 'GET',
+                            uri: `https://bravenewcoin-mwa-historic-v1.p.mashape.com/mwa-historic?coin=eth&from=${timestamp}&market=${name.toLowerCase()}`
+                        }, (error, response, body) => {
+                            if(error){
+                                logger.warn('Get bravenewcoin error: ' + error);
+                                return next();
+                            }
+
+                            let parsedData = JSON.parse(body);
+
+                            if(response.statusCode != 200){
+                                logger.warn('Get bravenewcoin error: ' + data.message);
+                                return next();
+                            }
+
+                            let {column_names, data} = parsedData;
+
+                            if(!data.length){
+                                logger.warn('Get bravenewcoin error: no data');
+                                return next();
+                            }
+
+                            let [rate] = data;
+                            let key = column_names.indexOf('index');
+
+                            if(!rate || !rate[key]) {
+                                logger.warn('Get bravenewcoin error: index is empty');
+                                return next();
+                            }
+
+                            fiatRates.push({name, rate : new BigNumber(parseFloat(rate[key]))});
+                            next()
+                        });
+
+
+
+                    }, (err) => {
+                        callback(null, Object.assign({}, ...fiatRates.map((info) => {
+                            return {[info.name]: (info.rate / tokenPrice).toFixed(6)};
+                        })));
+                    });
+                } else {
+                    logger.error('bravenewcoin X-Mashape-Key is not set');
+
+                    async.parallel({
+                        fiat_usd: (innerCallback) => {
+                            async.waterfall([
+                                (cb) => {
+                                    request({
+                                        method: 'GET',
+                                        uri: `http://api.fixer.io/latest?base=USD`
+                                    }, (error, response, body) => {
+                                        if(error || response.statusCode != 200) {
+                                            cb('fixer.io api error');
+                                        } else {
+                                            cb(null, JSON.parse(body));
+                                        }
+                                    });
+                                },
+                                (info, cb) => {
+                                    fx.rates = info.rates;
+                                    fx.rates['USD'] = 1;
+
+                                    cb(null, Object.keys(rates.fiat).map((key) => {
+                                        return {key, rate: new BigNumber(fx(1).from('USD').to(key))}
+                                    }));
+                                }
+                            ], innerCallback);
+                        },
+                        usd_eth: (innerCallback) => {
+                            async.waterfall([
+                                (cb) => {
+                                    request({
+                                        method: 'GET',
+                                        uri: `https://api.coinmarketcap.com/v1/ticker/ethereum/`
+                                    }, (error, response, body) => {
+                                        if(error || response.statusCode != 200) {
+                                            cb('coinmarketcap.com api error');
+                                        } else {
+                                            cb(null, JSON.parse(body));
+                                        }
+                                    });
+                                },
+                                (info, cb) => {
+                                    if(!info[0] || !info[0]['price_usd']) {
+                                        return cb('coinmarketcap.com api error');
+                                    }
+
+                                    cb(null, new BigNumber(info[0]['price_usd']));
+                                }
+                            ], innerCallback);
+                        }
+                    }, (err, results) => {
+                        if(err) return callback(err);
+
+                        callback(null, Object.assign({}, ...results.fiat_usd.map((info) => {
+                            return {[info.key]: (info.rate * results.usd_eth / tokenPrice).toFixed(6)};
+                        })));
+                    });
+                }
 			}
 		}, (err, rates) => {
-			logger.info(rates);
 			logger.info(`Rates updated`);
+			console.log(rates);
 			if(rates.crypto)
 				Controllers.crowdsale.ratesData.crypto = rates.crypto;
 			if(rates.fiat)
