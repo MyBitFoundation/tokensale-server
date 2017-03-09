@@ -25,7 +25,7 @@ class CronController {
 	
 	init() {
 		this.handleDeposits();
-		
+
 		//TODO only for tests.
 		if(config['ethereum']['rpc_enabled']) {
 			Models.settings.get('last_processed_eth_block', (err, result) => {
@@ -33,7 +33,7 @@ class CronController {
 				this.handleETHDeposits();
 			});
 		}
-		
+
 		CronController.handleRates();
 		cron.schedule('0 0 * * *', () => {
 			CronController.handleRates();

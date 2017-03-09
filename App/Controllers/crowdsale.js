@@ -43,65 +43,79 @@ class CrowdsaleController {
 		if(!currency) {
 			return callback('Currency is required');
 		}
-		
+
+        currency = currency.toLowerCase();
+
+		let allowedCurrencies = ['btc', 'eth', 'etc', 'xmr', 'dash', 'rep'];
+
+		if(!allowedCurrencies.indexOf(currency)){
+            return callback(`Currency ${currency.toUpperCase()} is not allowed`);
+		}
+
 		if(currency.toUpperCase() == 'ETH') {
 			return callback(null, {
                 address: address,
-                type: 'ETH'
+                type: 'ETH',
+				min : 0
             });
 		}
-		
-		async.waterfall([
-			(cb) => {
-				Models.depositWallets.findOne({
-					userId: userId,
-					depositType: currency.toUpperCase()
-				}, (err, wallet) => {
-					cb(null, wallet);
-				});
+
+		async.parallel({
+			wallet : (cb)=>{
+				async.waterfall([
+                    (cb) => {
+                        Models.depositWallets.findOne({
+                            userId: userId,
+                            depositType: currency.toUpperCase()
+                        }, (err, wallet) => {
+                            cb(null, wallet);
+                        });
+                    },
+                    (wallet, cb) => {
+                        if(wallet) {
+                            cb(null, wallet);
+                        } else {
+                            CrowdsaleController.createTransactionWallet(currency, userId, address, cb);
+                        }
+                    }
+				], cb)
 			},
-			(wallet, cb) => {
-				if(wallet) {
-					cb(null, wallet);
-				} else {
-					CrowdsaleController.createTransactionWallet(currency, userId, address, cb);
-				}
+			min : (cb)=>{
+                changelly.getMinAmount(currency, 'eth', function(error, data) {
+                    if(error)
+                        return cb('Changelly get min amount error: ' + error);
+
+                    if(data.error)
+                        return cb('Changelly get min amount error: ' + data.error.message);
+
+                    return cb(null, data.result);
+                });
 			}
-		], (err, wallet) => {
+		}, (err, result) => {
+			let {wallet, min} = result;
 			if(err) return GlobalError('20012012', err, callback);
 
 			let response = {
 				address: wallet.deposit,
-				type: wallet.depositType.toUpperCase()
+				type: wallet.depositType.toUpperCase(),
+                min
 			};
 
 			switch(response.type) {
-				case 'BTS':
-					return callback(null, {
-						address: wallet.extraInfo,
-						memo: wallet.deposit,
-						type: wallet.depositType.toUpperCase()
-					});
-					break;
-				case 'XMR':
-					return callback(null, {
-						address: wallet.extraInfo,
-						paymentId: wallet.deposit,
-						type: wallet.depositType.toUpperCase()
-					});
-					break;
-                case 'XRP':
-                    return callback(null, {
-                        address: wallet.deposit,
-                        destTag: wallet.extraInfo,
-                        type: wallet.depositType.toUpperCase()
-                    });
-                    break;
+                // case 'BTS':
+					// return callback(null, Object.assign(response, {
+					// 	address: wallet.extraInfo,
+					// 	memo: wallet.deposit
+					// }));
+					// break;
+                // case 'XRP':
+                //     return callback(null, Object.assign(response, {
+                //         address: wallet.deposit,
+                //         destTag: wallet.extraInfo
+                //     }));
+                //     break;
 				default:
-					return callback(null, {
-						address: wallet.deposit,
-						type: wallet.depositType.toUpperCase()
-					});
+					return callback(null, response);
 			}
 		});
 	}
