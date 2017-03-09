@@ -335,7 +335,7 @@ class CronController {
 				});
 			},
 			fiat: (callback) => {
-                if(config.hasOwnProperty('bravenewcoin-key')){
+                if(config.hasOwnProperty('bravenewcoin-key') && config['bravenewcoin-key']){
                     let fiatRates = [];
                     async.eachSeries(Object.keys(rates.fiat), (name, next) => {
                         request({

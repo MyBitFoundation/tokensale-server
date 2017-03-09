@@ -162,6 +162,47 @@ class CrowdsaleController {
 	rates(callback, data) {
 		callback(null, Controllers.crowdsale.ratesData);
 	}
+
+	exchangeAmount(callback, data){
+		let {currency, amount} = data._get;
+
+        if(!currency) {
+            return callback('Currency is required');
+        }
+
+        if(!amount) {
+            return callback('Amount is required');
+        }
+
+        async.parallel({
+        	min : (cb)=>{
+                changelly.getMinAmount(currency, 'eth', function(error, data) {
+                    if(error)
+                        return cb('Changelly get min amount error: ' + error);
+
+                    if(data.error)
+                        return cb('Changelly get min amount error: ' + data.error.message);
+
+                    return cb(null, data.result);
+                });
+			},
+			amount : (cb)=>{
+                changelly.getExchangeAmount(currency, 'eth', amount, function(error, data) {
+                    if(error)
+                        return cb('Changelly get exchange amount error: ' + error);
+
+                    if(data.error)
+                        return cb('Changelly get exchange amount error: ' + data.error.message);
+
+                    return cb(null, data.result);
+                });
+			}
+		}, (error, result)=>{
+            if(error) callback(error);
+
+            callback(null, result);
+		});
+	}
 	
 	static createTransactionWallet(currency, userId, userAddress, callback) {
 		async.waterfall([
