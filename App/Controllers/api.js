@@ -85,6 +85,8 @@ let APIController = {
 		}
 		
 		APIController.app[type](route, (req, res) => {
+			let time = parseInt(moment().format('X'));
+			logger.info('Start request', route);
 			async.waterfall([
 				cb => {
 					if(isPublic) return cb();
@@ -132,6 +134,7 @@ let APIController = {
 						result: result
 					};
 				}
+				logger.info('End request', route, parseInt(moment().format('X')) - time);
 				return res.send(result);
 			});
 			APIController.logRouter(type, route);
