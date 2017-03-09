@@ -194,7 +194,7 @@ class CrowdsaleController {
                     if(data.error)
                         return cb('Changelly get exchange amount error: ' + data.error.message);
 
-                    return cb(null, data.result);
+                    return cb(null, data.result * Controllers.crowdsale.getTokenPrice());
                 });
 			}
 		}, (error, result)=>{
