@@ -7,9 +7,15 @@ let request = require('request'),
 	config = require(ConfigPath),
 	moment = require('moment'),
 	fx = require("money"),
-	ethHelper = require('../Components/eth');
+	ethHelper = require('../Components/eth')/*,
+    Changelly = require('../Components/changelly')*/;
 
 fx.base = "USD";
+
+// let changelly = new Changelly(
+//     config['changelly']['ApiKey'],
+//     config['changelly']['ApiSecret']
+// );
 
 let Controllers = getControllers(),
 	Contracts = getContracts(),
@@ -163,24 +169,7 @@ class CrowdsaleController {
 	static createTransactionWallet(currency, userId, userAddress, callback) {
 		async.waterfall([
 			(cb) => {
-				request({
-					method: 'POST',
-					uri: 'https://shapeshift.io/shift',
-					json: {
-						withdrawal: userAddress || config['ethereum']['public_key'],
-						pair: `${currency.toLowerCase()}_eth`,
-						// returnAddress:"BBBBBBBBBBB",//TODO return address may be required (!!!important!!!)
-						apiKey: config['shapeshift']['public_key']
-					}
-				}, (error, response, body) => {
-					if(error || response.statusCode != 200) {
-						cb('Create transaction wallet error: ' + error);
-					} else if(body.error) {
-						cb('Api error' + body.error);
-					} else {
-						cb(null, body);
-					}
-				});
+                CrowdsaleController.requestShapeShift(currency, userAddress, cb)
 			},
 			(response, cb) => {
 				let coin = response.depositType.toUpperCase(),
@@ -203,6 +192,31 @@ class CrowdsaleController {
 			}
 		], callback);
 		
+	}
+
+	static requestShapeShift(currency, userAddress, cb){
+        request({
+            method: 'POST',
+            uri: 'https://shapeshift.io/shift',
+            json: {
+                withdrawal: userAddress || config['ethereum']['public_key'],
+                pair: `${currency.toLowerCase()}_eth`,
+                // returnAddress:"BBBBBBBBBBB",//TODO return address may be required (!!!important!!!)
+                apiKey: config['shapeshift']['public_key']
+            }
+        }, (error, response, body) => {
+            if(error || response.statusCode != 200) {
+                cb('Create transaction wallet error: ' + error);
+            } else if(body.error) {
+                cb('Api error' + body.error);
+            } else {
+                cb(null, body);
+            }
+        });
+	}
+
+	static requestChangelly(){
+
 	}
 }
 

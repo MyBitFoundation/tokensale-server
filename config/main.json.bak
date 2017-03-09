@@ -20,7 +20,12 @@
         "crowdSaleContractAddress": "0xc6Cc97A710F282dcb41C74F72C91BB0B8557637e"
 	},
 
-	"bravenewcoin-key" : "",
+	"bravenewcoin-key" : "p4w2WYkkIlmshka5VW0TgDBfMmaUp1js5X5jsnZzQMcihtxv7a",
+
+    "changelly" : {
+		"ApiKey" : "3455490d7e6d40f28723579f1750a085",
+		"ApiSecret" : "3f00da1d76af743bc078a539db1250fbc844221836c5da66a67752886cd44b35"
+	},
 
 	"deadline" : "2017-02-27 00:00:00"
 }
