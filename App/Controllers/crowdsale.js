@@ -46,9 +46,7 @@ class CrowdsaleController {
 
         currency = currency.toLowerCase();
 
-		let allowedCurrencies = ['btc', 'eth', 'etc', 'xmr', 'dash', 'rep'];
-
-		if(!allowedCurrencies.indexOf(currency)){
+		if(config['currencies'].indexOf(currency) == -1){
             return callback(`Currency ${currency.toUpperCase()} is not allowed`);
 		}
 
