@@ -8,7 +8,8 @@ let request = require('request'),
 	cron = require('node-cron'),
 	fx = require("money"),
 	BigNumber = require('bignumber.js'),
-	ethHelper = require('../Components/eth');
+	ethHelper = require('../Components/eth'),
+    changelly = require('../Components/changelly');
 
 let Controllers = getControllers(),
 	Contracts = getContracts(),
@@ -23,7 +24,7 @@ class CronController {
 	}
 	
 	init() {
-		this.handleDepositsFromShapeShift();
+		this.handleDeposits();
 		
 		//TODO only for tests.
 		if(config['ethereum']['rpc_enabled']) {
@@ -38,70 +39,122 @@ class CronController {
 			CronController.handleRates();
 		});
 	}
-	
-	getTxStat(deposit, cb) {
-		request({
-			method: 'GET',
-			uri: `https://shapeshift.io/txStat/${deposit}`
-		}, (error, response, body) => {
-			if(error || response.statusCode != 200) {
-				sendWarning('Get txStat error', error);
-				setTimeout(() => this.getTxStat(deposit, cb), 2000);
-			} else if(body.error) {
-				cb(body.error);
-			} else {
-				cb(null, JSON.parse(body));
-			}
-		});
+
+	handleDeposits(){
+        async.waterfall([
+            (cb) => {
+                Models.depositWallets.find({
+                    executedAt: null
+                }, (err, wallets) => {
+                    cb(null, wallets);
+                });
+            },
+            (wallets, cb) => {
+                async.eachSeries(wallets, (wallet, callback) => {
+                    this.handleDepositsFromChangelly(wallet, callback);
+                }, cb)
+            }
+        ], (err) => {
+            if(err) return GlobalError('33033044', err);
+            setTimeout(() => this.handleDeposits(), 60 * 1000);
+        });
 	}
-	
-	handleDepositsFromShapeShift() {
-		async.waterfall([
-			(cb) => {
-				Models.depositWallets.find({
-					executedAt: null
-				}, (err, wallets) => {
-					cb(null, wallets);
-				});
-			},
-			(wallets, firstCb) => {
-				async.eachSeries(wallets, (wallet, secondCb) => {
-					async.waterfall([
-						(cb) => {
-							this.getTxStat(wallet.deposit, cb);
-						},
-						(result, cb) => {
-							if(result.status != 'complete' || this.processedTransactions[result.transaction]) {
-								return cb(null, null, null);
-							}
-							Models.transactions.findOne({
-								txHash: result.transaction
-							}, (err, TX) => {
-								if(err) return cb(err);
-								if(!TX) return cb();
-								this.processedTransactions[result.transaction] = true;
-								// already processed
-								if(TX.currency != 'ETH') {
-									return cb();
-								}
-								TX.currency = result.incomingType;
-								TX.amount = result.incomingCoin;
-								TX.address = result.address;
-								TX.save((err) => {
-									if(err) return cb(err);
-									return cb();
-								});
-							});
-						}
-					], secondCb);
-				}, firstCb)
-			}
-		], (err) => {
-			if(err) return GlobalError('33033044', err);
-			setTimeout(() => this.handleDepositsFromShapeShift(), 60 * 1000);
-		});
+
+    getShapeShiftTx(deposit, cb) {
+        request({
+            method: 'GET',
+            uri: `https://shapeshift.io/txStat/${deposit}`
+        }, (error, response, body) => {
+            if(error || response.statusCode != 200) {
+                sendWarning('Get getShapeShiftTx error', error);
+                return setTimeout(() => this.getShapeShiftTx(deposit, cb), 2000);
+            }
+
+            if(body.error)
+                return cb(body.error);
+
+            cb(null, JSON.parse(body));
+        });
+    }
+
+	handleDepositsFromShapeShift(wallet, callback) {
+        async.waterfall([
+            (cb) => {
+                this.getShapeShiftTx(wallet.deposit, cb);
+            },
+            (result, cb) => {
+                if(result.status != 'complete' || this.processedTransactions[result.transaction]) {
+                    return cb(null, null, null);
+                }
+                Models.transactions.findOne({
+                    txHash: result.transaction
+                }, (err, TX) => {
+                    if(err) return cb(err);
+                    if(!TX) return cb();
+                    this.processedTransactions[result.transaction] = true;
+                    // already processed
+                    if(TX.currency != 'ETH') {
+                        return cb();
+                    }
+                    TX.currency = result.incomingType;
+                    TX.amount = result.incomingCoin;
+                    TX.address = result.address;
+                    TX.save((err) => {
+                        if(err) return cb(err);
+                        return cb();
+                    });
+                });
+            }
+        ], callback);
 	}
-	
+
+	getChangellyTx(deposit, cb){
+        changelly.getTransactions(20, 0, undefined, deposit, undefined, function(error, data) {
+            if(error){
+                sendWarning('Get getChangellyTx error', error);
+                return setTimeout(() => this.getChangellyTx(deposit, cb), 2000);
+			}
+
+            if(data.error)
+                return cb('Create transaction wallet error: ' + data.error.message);
+
+            cb(null, data.result);
+        });
+	}
+
+	handleDepositsFromChangelly(wallet, callback){
+        async.waterfall([
+            (cb) => {
+                this.getChangellyTx(wallet.deposit, cb);
+            },
+			(transactions, callback)=>{
+                async.eachSeries(transactions, (transaction, cb) => {
+                    if(transaction.status != 'finished' || this.processedTransactions[transaction.payoutHash]) {
+                        return cb();
+                    }
+                    Models.transactions.findOne({
+                        txHash: transaction.payoutHash
+                    }, (err, TX) => {
+                        if(err) return cb(err);
+                        if(!TX) return cb();
+                        this.processedTransactions[transaction.payoutHash] = true;
+                        // already processed
+                        if(TX.currency != 'ETH') {
+                            return cb();
+                        }
+                        TX.currency = transaction.currencyFrom.toUpperCase();
+                        TX.amount = transaction.amountFrom;
+                        TX.address = transaction.payinAddress;
+                        TX.save((err) => {
+                            if(err) return cb(err);
+                            return cb();
+                        });
+                    });
+                }, callback)
+			}
+        ], callback);
+	}
+
 	handleETHDeposits() {
 		let lastBlock = ethRPC.eth.getBlock("latest");
 		

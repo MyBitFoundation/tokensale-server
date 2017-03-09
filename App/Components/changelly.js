@@ -2,7 +2,9 @@
  * Created by shumer on 3/9/17.
  */
 'use strict';
-module.exports = (function() {
+
+let config = require(ConfigPath);
+let ChangellyClass = (function() {
     let URL = 'https://api.changelly.com';
     let io = require('socket.io-client');
     let jayson = require('jayson');
@@ -117,3 +119,8 @@ module.exports = (function() {
 
     return Changelly;
 })();
+
+module.exports = new ChangellyClass(
+    config['changelly']['ApiKey'],
+    config['changelly']['ApiSecret']
+);

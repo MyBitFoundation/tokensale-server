@@ -7,15 +7,10 @@ let request = require('request'),
 	config = require(ConfigPath),
 	moment = require('moment'),
 	fx = require("money"),
-	ethHelper = require('../Components/eth')/*,
-    Changelly = require('../Components/changelly')*/;
+	ethHelper = require('../Components/eth'),
+    changelly = require('../Components/changelly');
 
 fx.base = "USD";
-
-// let changelly = new Changelly(
-//     config['changelly']['ApiKey'],
-//     config['changelly']['ApiSecret']
-// );
 
 let Controllers = getControllers(),
 	Contracts = getContracts(),
@@ -43,29 +38,24 @@ class CrowdsaleController {
 	
 	deposit(callback, data) {
 		let {currency} = data._post,
-			userId = data.req.user._id;
-		
+			{_id : userId, address} = data.user;
+
 		if(!currency) {
 			return callback('Currency is required');
 		}
 		
 		if(currency.toUpperCase() == 'ETH') {
-			let publicKey = data.req.user.publicKey;
-			let address = ethHelper.addressFromPublic(publicKey);
-			
-			return callback(null, (publicKey && address) ? {
-					address: address,
-					type: 'ETH'
-				} : null);
+			return callback(null, {
+                address: address,
+                type: 'ETH'
+            });
 		}
 		
 		async.waterfall([
 			(cb) => {
 				Models.depositWallets.findOne({
 					userId: userId,
-					depositType: currency.toUpperCase(),
-					executedAt: null
-					//TODO expiration date may be required (!!!important!!!)
+					depositType: currency.toUpperCase()
 				}, (err, wallet) => {
 					cb(null, wallet);
 				});
@@ -74,17 +64,17 @@ class CrowdsaleController {
 				if(wallet) {
 					cb(null, wallet);
 				} else {
-					CrowdsaleController.createTransactionWallet(currency, userId, data.user.address, cb);
+					CrowdsaleController.createTransactionWallet(currency, userId, address, cb);
 				}
 			}
 		], (err, wallet) => {
 			if(err) return GlobalError('20012012', err, callback);
-			
+
 			let response = {
 				address: wallet.deposit,
 				type: wallet.depositType.toUpperCase()
 			};
-			
+
 			switch(response.type) {
 				case 'BTS':
 					return callback(null, {
@@ -100,6 +90,13 @@ class CrowdsaleController {
 						type: wallet.depositType.toUpperCase()
 					});
 					break;
+                case 'XRP':
+                    return callback(null, {
+                        address: wallet.deposit,
+                        destTag: wallet.extraInfo,
+                        type: wallet.depositType.toUpperCase()
+                    });
+                    break;
 				default:
 					return callback(null, {
 						address: wallet.deposit,
@@ -169,20 +166,19 @@ class CrowdsaleController {
 	static createTransactionWallet(currency, userId, userAddress, callback) {
 		async.waterfall([
 			(cb) => {
-                CrowdsaleController.requestShapeShift(currency, userAddress, cb)
+                CrowdsaleController.requestChangelly(currency, userAddress, cb)
 			},
 			(response, cb) => {
-				let coin = response.depositType.toUpperCase(),
-					newWallet = {
-						userId: userId,
-						orderId: response.orderId,
-						deposit: response.deposit,
-						depositType: coin,
-						extraInfo: (coin == 'XMR' || coin == 'BTS') ? response.sAddress : null,
-						executed: false,
-						executedAt: null
-					};
-				
+				let newWallet = {
+					userId		: userId,
+					orderId		: response.orderId,
+					deposit		: response.deposit,
+					depositType	: response.coin.toUpperCase(),
+					extraInfo	: response.extraInfo,
+					executed	: false,
+					executedAt	: null
+				};
+
 				Models.depositWallets.create(newWallet, err => {
 					console.log(err);
 					if(err) return cb('Insert deposit wallet error');
@@ -195,28 +191,50 @@ class CrowdsaleController {
 	}
 
 	static requestShapeShift(currency, userAddress, cb){
+		let coin = currency.toLowerCase();
+
         request({
             method: 'POST',
             uri: 'https://shapeshift.io/shift',
             json: {
                 withdrawal: userAddress || config['ethereum']['public_key'],
-                pair: `${currency.toLowerCase()}_eth`,
+                pair: `${coin}_eth`,
                 // returnAddress:"BBBBBBBBBBB",//TODO return address may be required (!!!important!!!)
                 apiKey: config['shapeshift']['public_key']
             }
         }, (error, response, body) => {
-            if(error || response.statusCode != 200) {
-                cb('Create transaction wallet error: ' + error);
-            } else if(body.error) {
-                cb('Api error' + body.error);
-            } else {
-                cb(null, body);
-            }
+            if(error || response.statusCode != 200)
+                return cb('Create transaction wallet error: ' + error);
+
+            if(body.error)
+                return cb('Api error' + body.error);
+
+            cb(null, {
+                coin,
+                orderId : body.orderId,
+                deposit : body.deposit,
+                extraInfo : (coin == 'xmr' || coin == 'bts') ? body.sAddress : null,
+            });
         });
 	}
 
-	static requestChangelly(){
+	static requestChangelly(currency, userAddress, cb){
+        let coin = currency.toLowerCase();
 
+        changelly.generateAddress(coin, 'eth', userAddress, undefined, (error, data) => {
+        	if(error)
+        		return cb('Create transaction wallet error: ' + error);
+
+        	if(data.error)
+        		return cb('Create transaction wallet error: ' + data.error.message);
+
+            cb(null, {
+                coin,
+                orderId : data.id,
+                deposit : data.result.address,
+                extraInfo : data.result.extraId ? data.result.extraId : null,
+            })
+        });
 	}
 }
 
