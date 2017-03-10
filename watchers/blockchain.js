@@ -19,6 +19,14 @@ logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 global.ethPassword = fs.readFileSync(`${RootDir}password`).toString();
 
+if(!config['disableRaven']) {
+    Raven.config('https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2', {
+        autoBreadcrumbs: true
+    }).install((e, d) => {
+        logger.error(d);
+        process.exit(1);
+    });
+}
 global.raven = Raven;
 global.sendWarning = (message, data) => {
     logger.warn(message, data);
