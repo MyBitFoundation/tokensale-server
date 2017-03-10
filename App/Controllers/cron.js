@@ -211,6 +211,14 @@ class CronController {
 								return next(err);
 							}
 							
+							if(amountInWei < ethRPC.toWei(maxCommission, 'ether')) {
+								sendWarning('Invalid balance', {
+									amount: ethRPC.toWei(amount, 'ether'),
+									balance: balance,
+									comission: ethRPC.toWei(maxCommission, 'ether')
+								});
+								return next();
+							}
 							logger.info({
 								from: user.address,
 								to: config['ethereum']['crowdSaleContractAddress'],
