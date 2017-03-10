@@ -215,6 +215,7 @@ class CronController {
 								from: user.address,
 								to: config['ethereum']['crowdSaleContractAddress'],
 								value: amountInWei - ethRPC.toWei(maxCommission, 'ether'),
+								balance: balance,
 								gas: gas
 							});
 							ethRPC.eth.sendTransaction({
