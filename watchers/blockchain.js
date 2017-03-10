@@ -11,12 +11,27 @@ const logger    = require('log4js').getLogger('Watcher blockchain');
 const config    = require(global.ConfigPath);
 const fs        = require('fs');
 const ethHelper = require(`${RootDir}App/Components/eth`);
+const Raven = require('raven');
 
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 logger.error("!!!! Don't forget remove file with password !!!!");
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 global.ethPassword = fs.readFileSync(`${RootDir}password`).toString();
+
+global.raven = Raven;
+global.sendWarning = (message, data) => {
+    logger.warn(message, data);
+
+    if(!Raven || config['disableRaven']) {
+        return;
+    }
+
+    Raven.captureMessage(message, {
+        level: 'warning',
+        extra: { error: data }
+    });
+};
 
 let web3 = new Web3(new Web3.providers.HttpProvider(config['ethereum']['rpc']));
 web3._extend({
@@ -170,7 +185,7 @@ class Processor {
                     return cb();
                 }
 
-                let gas = 300000,
+                let gas = 30000,
                     tokenPrice = this.getTokenPrice(),
                     userId = user._id,
                     maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
@@ -182,6 +197,15 @@ class Processor {
 
                 if(parseInt(balance) < parseInt(amountInWei)){
                     amountInWei = balance;
+                }
+
+                if(amountInWei < ethRPC.toWei(maxCommission, 'ether')) {
+                    sendWarning('Invalid balance', {
+                        amount      : ethRPC.toWei(amount, 'ether'),
+                        balance     : balance,
+                        comission   : ethRPC.toWei(maxCommission, 'ether')
+                    });
+                    return cb();
                 }
 
                 try {
@@ -197,6 +221,7 @@ class Processor {
                     from    : user.address,
                     to      : config['ethereum']['crowdSaleContractAddress'],
                     value   : amountInWei - ethRPC.toWei(maxCommission, 'ether'),
+                    balance : balance,
                     gas     : gas
                 });
 
