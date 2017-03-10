@@ -185,7 +185,7 @@ class CronController {
 						return next();
 					}
 					
-					let gas = 300000;
+					let gas = 30000;
 					
 					let userId = Controllers.users.users[currentTransaction.to],
 						maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
