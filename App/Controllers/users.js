@@ -45,12 +45,14 @@ class UsersController {
 		}
 		
 		let {email, password} = post;
-		password = passwordHash.generate(password);
+
+		let passwordString = passwordHash.generate(password);
+
 		email = email.toLowerCase();
 		Models.users.findOne({email}, (err, exist) => {
 			if(exist) return cb(`User with email ${email} already exist`);
 
-            ethHelper.generateBrainKey(password, email, (privateKey)=>{
+            ethHelper.generateBrainKey(passwordString, email, (privateKey)=>{
                 if(!privateKey){
                     return cb('User creation error');
                 }
@@ -72,7 +74,7 @@ class UsersController {
                     }
                 }
 
-                Models.users.create({email, password, privateKey : encryptedPrivateKey, publicKey, address}, (err, user) => {
+                Models.users.create({email, password : passwordString, privateKey : encryptedPrivateKey, publicKey, address}, (err, user) => {
                     Controllers.users.users[user.address] = user._id;
 
                     if(err) return GlobalError('103232432', err, cb);
@@ -109,7 +111,15 @@ class UsersController {
                 return callback('Incorrect password');
             }
 
-            user.password = passwordHash.generate(_post.password_new);
+            let privateKey  = ethHelper.decryptWithPassword(user.privateKey, _post.password_old),
+                address     = ethHelper.addressFromPrivate(privateKey);
+
+            if(!address || user.address != address){
+                return callback("Private key decryption password error")
+            }
+
+            user.password   = passwordHash.generate(_post.password_new);
+            user.privateKey = ethHelper.encryptWithPassword(privateKey, _post.password_new);
 
             user.save((err, user)=>{
                 if(err) return callback(`Updating user error`);

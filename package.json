@@ -2,7 +2,8 @@
   "name": "mybit_server",
   "version": "0.0.1",
   "scripts": {
-    "start": "PASSWORD=12345 node server.js"
+    "start": "PASSWORD=12345 node server.js",
+    "watcher" : "node watchers/blockchain.js"
   },
   "dependencies": {
     "async": "^2.1.5",

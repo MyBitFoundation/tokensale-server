@@ -19,20 +19,10 @@ class CronController {
 	
 	constructor() {
 		logger.info('Cron controller initialized');
-		this.lastProcessedBlockIndex = 0;
-		this.processedTransactions = {};
 	}
 	
 	init() {
 		this.handleDeposits();
-
-		//TODO only for tests.
-		if(config['ethereum']['rpc_enabled']) {
-			Models.settings.get('last_processed_eth_block', (err, result) => {
-				this.lastProcessedBlockIndex = parseInt(result || config['ethereum']['firstBlockForProcessing']);
-				this.handleETHDeposits();
-			});
-		}
 
 		CronController.handleRates();
 		cron.schedule('0 0 * * *', () => {
@@ -83,7 +73,7 @@ class CronController {
                 this.getShapeShiftTx(wallet.deposit, cb);
             },
             (result, cb) => {
-                if(result.status != 'complete' || this.processedTransactions[result.transaction]) {
+                if(result.status != 'complete') {
                     return cb(null, null, null);
                 }
                 Models.transactions.findOne({
@@ -91,7 +81,6 @@ class CronController {
                 }, (err, TX) => {
                     if(err) return cb(err);
                     if(!TX) return cb();
-                    this.processedTransactions[result.transaction] = true;
                     // already processed
                     if(TX.currency != 'ETH') {
                         return cb();
@@ -129,7 +118,7 @@ class CronController {
             },
 			(transactions, callback)=>{
                 async.eachSeries(transactions, (transaction, cb) => {
-                    if(transaction.status != 'finished' || this.processedTransactions[transaction.payoutHash]) {
+                    if(transaction.status != 'finished') {
                         return cb();
                     }
                     Models.transactions.findOne({
@@ -137,7 +126,6 @@ class CronController {
                     }, (err, TX) => {
                         if(err) return cb(err);
                         if(!TX) return cb();
-                        this.processedTransactions[transaction.payoutHash] = true;
                         // already processed
                         if(TX.currency != 'ETH') {
                             return cb();
@@ -155,120 +143,6 @@ class CronController {
         ], callback);
 	}
 
-	handleETHDeposits() {
-		let lastBlock = ethRPC.eth.getBlock("latest");
-		
-		if(!lastBlock || !lastBlock['number']) {
-			return;
-		}
-		
-		let lastBlockIndex = lastBlock['number'],
-			currentBlockIndex = this.lastProcessedBlockIndex; //TODO set last from settings;
-		
-		let tokenPrice = Controllers.crowdsale.getTokenPrice();
-		
-		async.whilst(
-			() => {
-				return parseInt(currentBlockIndex) < parseInt(lastBlockIndex);
-			},
-			(blockCallback) => {
-				let currentBlock = ethRPC.eth.getBlock(currentBlockIndex + 1);
-				currentBlockIndex = currentBlock.number;
-				
-				logger.info(`Start processed block ${currentBlockIndex} with ${currentBlock.transactions.length} transactions`);
-				async.eachSeries(currentBlock.transactions, (txHash, next) => {
-					let currentTransaction = ethRPC.eth.getTransaction(txHash);
-					if(!currentTransaction)
-						return next();
-					
-					if(!Controllers.users.users.hasOwnProperty(currentTransaction.to)) {
-						return next();
-					}
-					
-					let gas = 300000;
-					
-					let userId = Controllers.users.users[currentTransaction.to],
-						maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
-						amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
-						resultAmount = tokenPrice * (amount - maxCommission);
-					
-					Models.transactions.findOne({txHash}, (err, transaction) => {
-						if(transaction) {
-							return next();
-						}
-						let amountInWei = ethRPC.toWei(amount, 'ether');
-						Models.users.findOne({_id: userId}, (err, user) => {
-							let balance = ethRPC.eth.getBalance(user.address);
-							
-							if(parseInt(balance) < parseInt(amountInWei))
-								amountInWei = balance;
-							
-							if(err) return next(err);
-							
-							try {
-								ethRPC.personal.unlockAccount(user.address, ethPassword);
-							} catch(e) {
-								return next(err);
-							}
-							
-							logger.info({
-								from: user.address,
-								to: config['ethereum']['crowdSaleContractAddress'],
-								value: amountInWei - ethRPC.toWei(maxCommission, 'ether'),
-								gas: gas
-							});
-							ethRPC.eth.sendTransaction({
-								from: user.address,
-								to: config['ethereum']['crowdSaleContractAddress'],
-								value: amountInWei - ethRPC.toWei(maxCommission, 'ether'),
-								gas: gas
-							}, (err, crowdSaleTxHash) => {
-								logger.info('tx', crowdSaleTxHash);
-								if(err) return next(err);
-								logger.info(`New transaction from ${user.address} to contract`);
-								
-								let transaction = {
-									userId: userId,
-									amount: ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'),
-									ethAmount: ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'),
-									currency: 'ETH',
-									receivedTokens: resultAmount,
-									txHash: txHash,
-									crowdSaleTxHash: crowdSaleTxHash,
-									tokenPrice: tokenPrice,
-									address: user.address
-								};
-								Models.transactions.create(transaction, (err, TX) => {
-									if(err) return GlobalError('10:57', err, next);
-									return next();
-								});
-							});
-						});
-					});
-				}, (err) => {
-					if(err) {
-						logger.error('handleETHDeposits', err);
-						this.lastProcessedBlockIndex = currentBlockIndex - 1;
-						Models.settings.set('last_processed_eth_block', this.lastProcessedBlockIndex);
-						return setTimeout(() => this.handleETHDeposits(), 20 * 1000);
-					}
-					Models.settings.set('last_processed_eth_block', currentBlockIndex, (err) => {
-						blockCallback(null, currentBlockIndex);
-					});
-				});
-			},
-			(err) => {
-				if(err) {
-					logger.error(1, err);
-				} else {
-					this.lastProcessedBlockIndex = currentBlockIndex;
-					Models.settings.set('last_processed_eth_block', currentBlockIndex);
-				}
-				setTimeout(() => this.handleETHDeposits(), 20 * 1000);
-			}
-		);
-	}
-	
 	static handleRates() {
 		let rates = {
 			crypto: {
