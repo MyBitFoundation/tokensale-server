@@ -30,7 +30,7 @@ class CronController {
 		if(config['ethereum']['rpc_enabled']) {
 			Models.settings.get('last_processed_eth_block', (err, result) => {
 				this.lastProcessedBlockIndex = parseInt(result || config['ethereum']['firstBlockForProcessing']);
-				// this.handleETHDeposits();
+				this.handleETHDeposits();
 			});
 		}
 
