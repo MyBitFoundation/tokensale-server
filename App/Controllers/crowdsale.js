@@ -44,13 +44,13 @@ class CrowdsaleController {
 			return callback('Currency is required');
 		}
 
-        currency = currency.toLowerCase();
+        currency = currency.toUpperCase();
 
-		if(config['currencies'].indexOf(currency) == -1){
-            return callback(`Currency ${currency.toUpperCase()} is not allowed`);
+		if(config['currencies']['crypto'].indexOf(currency) == -1){
+            return callback(`Currency ${currency} is not allowed`);
 		}
 
-		if(currency.toUpperCase() == 'ETH') {
+		if(currency == 'ETH') {
 			return callback(null, {
                 address: address,
                 type: 'ETH',
@@ -64,7 +64,7 @@ class CrowdsaleController {
                     (cb) => {
                         Models.depositWallets.findOne({
                             userId: userId,
-                            depositType: currency.toUpperCase()
+                            depositType: currency
                         }, (err, wallet) => {
                             cb(null, wallet);
                         });
@@ -73,13 +73,13 @@ class CrowdsaleController {
                         if(wallet) {
                             cb(null, wallet);
                         } else {
-                            CrowdsaleController.createTransactionWallet(currency, userId, address, cb);
+                            CrowdsaleController.createTransactionWallet(currency.toLowerCase(), userId, address, cb);
                         }
                     }
 				], cb)
 			},
 			min : (cb)=>{
-                changelly.getMinAmount(currency, 'eth', function(error, data) {
+                changelly.getMinAmount(currency.toLowerCase(), 'eth', function(error, data) {
                     if(error)
                         return cb('Changelly get min amount error: ' + error);
 

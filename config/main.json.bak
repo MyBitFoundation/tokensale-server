@@ -7,7 +7,10 @@
 	"disableRaven": false,
 	"app_api_host": "60800",
 
-    "currencies" : ["btc", "eth", "etc", "xmr", "dash", "rep"],
+    "currencies" : {
+        "crypto" 	: ["BTC", "ETH", "ETC", "XMR", "DASH", "REP"],
+        "fiat" 		: ["EUR","USD","CNY","GBP","AUD","CAD","SGD","INR","RUB","JPY"]
+    },
 
 	"shapeshift" : {
 		"public_key" : "8f9f2046658f457d783685bdb9bc42e00df45c3e3cbb70f65d1488e2137e44dff45f6730731e22403bc103cf4618674448bd7c3cbc3e904dc3e3a228895e233c",

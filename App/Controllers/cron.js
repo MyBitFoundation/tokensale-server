@@ -143,30 +143,45 @@ class CronController {
         ], callback);
 	}
 
-	static handleRates() {
-		let rates = {
-			crypto: {
-				BTC: null,
-				ETH: null,
-				ETC: null,
-				XMR: null,
-				DASH: null,
-				REP: null
-			},
-			fiat: {
-				EUR: null,
-				USD: null,
-				CNY: null,
-				GBP: null,
-				AUD: null,
-				CAD: null,
-				SGD: null,
-				INR: null,
-				RUB: null,
-				JPY: null
-			}
-		};
+	static getShapeShiftRate(coin, next, callback){
+        request({
+            method: 'GET',
+            uri: `https://shapeshift.io/rate/eth_${coin.toLowerCase()}`
+        }, (error, response, body) => {
+            if(error || response.statusCode != 200) {
+                logger.warn('Get rate from shapeshift error: ' + error);
+                next();
+            } else if(body.error) {
+                logger.warn('Get rate from shapeshift error: ' + body.error);
+                next();
+            } else {
+                let info = JSON.parse(body);
 
+                if(!info.rate || !parseFloat(info.rate)) {
+                    logger.warn('Get crypto rate return null', `eth_${coin.toLowerCase()}`, info);
+                    return next();
+                }
+                callback(coin, info.rate);
+                next();
+            }
+        });
+    }
+
+    static getChangellyRate(coin, next, callback){
+        changelly.getExchangeAmount('ETH', coin, 1, (error, result)=>{
+            if(error){
+                logger.warn('Get rate from changelly error: ' + error);
+                next();
+            } else if(!result || !result.result){
+                logger.warn('Get rate from changelly error: no data');
+            } else {
+                callback(coin, result.result);
+                next();
+            }
+        });
+    }
+
+	static handleRates() {
 		let timestamp = Math.round(Date.now()/1000 - 2*60*60);
 
 		let tokenPrice = Controllers.crowdsale.getTokenPrice();
@@ -174,32 +189,16 @@ class CronController {
 		async.parallel({
 			crypto: (callback) => {
 				let cryptoRates = [];
-				async.eachSeries(Object.keys(rates.crypto), (name, next) => {
+				async.eachSeries(config['currencies']['crypto'], (name, next) => {
 					if(name == 'ETH') {
 						cryptoRates.push([name, new BigNumber(1)]);
 						return next();
 					}
-					request({
-						method: 'GET',
-						uri: `https://shapeshift.io/rate/eth_${name.toLowerCase()}`
-					}, (error, response, body) => {
-						if(error || response.statusCode != 200) {
-							logger.warn('Get rate from shapeshift error: ' + error);
-							next();
-						} else if(body.error) {
-							logger.warn('Get rate from shapeshift error: ' + body.error);
-							next();
-						} else {
-							let info = JSON.parse(body);
-							
-							if(!info.rate || !parseFloat(info.rate)) {
-								logger.warn('Get crypto rate return null', `eth_${name.toLowerCase()}`, info);
-								return next();
-							}
-							cryptoRates.push([name, new BigNumber(parseFloat(info.rate))]);
-							next();
-						}
-					});
+
+					CronController.getChangellyRate(name, next, (name, rate)=>{
+                        cryptoRates.push([name, new BigNumber(rate)]);
+                    });
+
 				}, (err) => {
 					let result = {};
 					cryptoRates.forEach(row => {
@@ -211,7 +210,7 @@ class CronController {
 			fiat: (callback) => {
                 if(config.hasOwnProperty('bravenewcoin-key') && config['bravenewcoin-key']){
                     let fiatRates = [];
-                    async.eachSeries(Object.keys(rates.fiat), (name, next) => {
+                    async.eachSeries(config['currencies']['fiat'], (name, next) => {
                         request({
                             headers: {
                                 'X-Mashape-Key'	: config['bravenewcoin-key'],
@@ -280,7 +279,7 @@ class CronController {
                                     fx.rates = info.rates;
                                     fx.rates['USD'] = 1;
 
-                                    cb(null, Object.keys(rates.fiat).map((key) => {
+                                    cb(null, config['currencies']['fiat'].map((key) => {
                                         return {key, rate: new BigNumber(fx(1).from('USD').to(key))}
                                     }));
                                 }
