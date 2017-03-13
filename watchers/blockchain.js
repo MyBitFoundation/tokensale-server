@@ -102,14 +102,12 @@ class Processor {
     processGlobal(){
         let lastBlock = ethRPC.eth.getBlock("latest");
 
-        if(!lastBlock || !lastBlock['number']) {
+        if(!lastBlock || !lastBlock.number) {
             return;
         }
 
-        this.lastBlockIndex = lastBlock['number'];
+        this.lastBlockIndex = lastBlock.number;
         this.currentBlockIndex = this.lastProcessedBlockIndex;
-
-        //
 
         async.whilst(
             () => {
@@ -130,6 +128,10 @@ class Processor {
 
     processBlock(callback){
         let currentBlock = ethRPC.eth.getBlock(this.currentBlockIndex + 1);
+
+        if(!currentBlock || !currentBlock.number || !currentBlock.transactions || !Array.isArray(currentBlock.transactions)) {
+            return callback();
+        }
 
         this.currentBlockIndex = currentBlock.number;
 
@@ -160,7 +162,7 @@ class Processor {
     processTransaction(txHash, callback){
         let currentTransaction = ethRPC.eth.getTransaction(txHash);
 
-        if(!currentTransaction)
+        if(!currentTransaction || !currentTransaction.to || !currentTransaction.value)
             return callback();
 
         let address = currentTransaction.to.toString();
