@@ -209,6 +209,7 @@ class Processor {
                     amountInWei = balance;
                 }
 
+                logger.info(amountInWei, ethRPC.toWei(maxCommission, 'ether'), amountInWei - ethRPC.toWei(maxCommission, 'ether'));
                 if(amountInWei < ethRPC.toWei(maxCommission, 'ether')) {
                     sendWarning('Invalid balance', {
                         amount      : ethRPC.toWei(amount, 'ether'),
