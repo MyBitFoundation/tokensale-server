@@ -199,22 +199,22 @@ class Processor {
                     tokenPrice = this.getTokenPrice(),
                     userId = user._id,
                     maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
+                    maxCommissionInWei = parseInt(ethRPC.toWei(maxCommission, 'ether')),
                     amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
-                    amountInWei = ethRPC.toWei(amount, 'ether'),
+                    amountInWei = parseInt(ethRPC.toWei(amount, 'ether')),
                     resultAmount = tokenPrice * (amount - maxCommission);
 
                 let balance = ethRPC.eth.getBalance(user.address);
 
                 if(parseInt(balance) < parseInt(amountInWei)){
-                    amountInWei = balance;
+                    amountInWei = parseInt(balance);
                 }
 
-                logger.info(amountInWei, ethRPC.toWei(maxCommission, 'ether'), amountInWei - ethRPC.toWei(maxCommission, 'ether'), parseInt(amountInWei) < parseInt(ethRPC.toWei(maxCommission, 'ether')));
-                if(amountInWei < ethRPC.toWei(maxCommission, 'ether')) {
+                if(amountInWei < maxCommissionInWei) {
                     sendWarning('Invalid balance', {
                         amount      : ethRPC.toWei(amount, 'ether'),
                         balance     : balance,
-                        comission   : ethRPC.toWei(maxCommission, 'ether')
+                        comission   : maxCommissionInWei
                     });
                     return cb();
                 }
@@ -231,7 +231,7 @@ class Processor {
                 logger.info('[processTransaction][send transaction] : ', {
                     from    : user.address,
                     to      : config['ethereum']['crowdSaleContractAddress'],
-                    value   : amountInWei - ethRPC.toWei(maxCommission, 'ether'),
+                    value   : amountInWei - maxCommissionInWei,
                     balance : balance,
                     gas     : gas
                 });
