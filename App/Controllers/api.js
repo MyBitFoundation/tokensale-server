@@ -121,8 +121,12 @@ let APIController = {
 					});
 				}
 			], (err, result) => {
+                let address = APIController.server.address();
+
 				res.header('Content-Type', 'text/json');
-				res.header('Content-Security-Policy','default-src; frame-src');
+				// res.header('Content-Security-Policy','default-src *; frame-src *');
+				// res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+				// res.header('Access-Control-Allow-Origin',req.protocol + '://' + address.address + ':' + address.port);
 				if(err) {
 					if(typeof err == 'string') {
 						err = {
