@@ -43,7 +43,7 @@ class CrowdsaleContract {
 	
 	createPresale(forAddress, cb) {
 		return this.contract.createPresale(forAddress, {
-			from: config['ethereum']['public_key'],
+			from: forAddress,
 			gas: 900000
 		}, (err, result) => {
 			logger.info(err, result);

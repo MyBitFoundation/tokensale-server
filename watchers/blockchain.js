@@ -246,15 +246,15 @@ class Processor {
 						if(resultAmountInEth < 25)
 							return cb(null, config['ethereum']['preSaleContractAddress']);
 						
-						try {
-							ethRPC.personal.unlockAccount(config['ethereum']['public_key'], ethPassword);
-						} catch(error) {
-							if(error) {
-								logger.error('[processTransaction][unlock main account] : ', error);
-								return cb(error);
-							}
-						}
-						
+						// try {
+						// 	ethRPC.personal.unlockAccount(config['ethereum']['public_key'], ethPassword);
+						// } catch(error) {
+						// 	if(error) {
+						// 		logger.error('[processTransaction][unlock main account] : ', error);
+						// 		return cb(error);
+						// 	}
+						// }
+						amountInWei = amountInWei - 900000;
 						this.CrowdSaleContract.createPresale(user.address, (err, presaleAddress) => {
 							user.preSaleAddress = presaleAddress;
 							user.save();
