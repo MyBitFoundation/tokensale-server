@@ -82,7 +82,7 @@ class Processor {
 			(cb) => {
 				this.CrowdSaleContract = require(`${RootDir}App/Contracts/crowdsale.simple`);
 				logger.info(this.CrowdSaleContract);
-				// return cb();
+				return cb();
 			},
 			(cb) => {
 				this.processGlobal(cb);
