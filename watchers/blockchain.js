@@ -84,7 +84,8 @@ class Processor {
 			},
 			(cb) => {
 				this.CrowdSaleContract = require(`${RootDir}App/Contracts/crowdsale`);
-				return cb();
+				logger.info(this.CrowdSaleContract);
+				// return cb();
 			}
 		], (error, result) => {
 			console.log("done");
