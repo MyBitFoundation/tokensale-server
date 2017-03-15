@@ -195,7 +195,7 @@ class Processor {
                     return cb();
                 }
 
-                let gas = 40000,
+                let gas = 400000,
                     tokenPrice = this.getTokenPrice(),
                     userId = user._id,
                     maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
