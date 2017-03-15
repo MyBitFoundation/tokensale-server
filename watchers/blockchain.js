@@ -137,7 +137,7 @@ class Processor {
 
         logger.info(`Start processed block ${this.currentBlockIndex} with ${currentBlock.transactions.length} transactions`);
 
-        async.eachSeries(currentBlock.transactions, (txHash, next) => {
+        async.each(currentBlock.transactions, (txHash, next) => {
             this.processTransaction(txHash, next)
         }, (error) => {
             if(error) {
@@ -195,25 +195,26 @@ class Processor {
                     return cb();
                 }
 
-                let gas = 30000,
+                let gas = 400000,
                     tokenPrice = this.getTokenPrice(),
                     userId = user._id,
                     maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
+                    maxCommissionInWei = parseInt(ethRPC.toWei(maxCommission, 'ether')),
                     amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
-                    amountInWei = ethRPC.toWei(amount, 'ether'),
+                    amountInWei = parseInt(ethRPC.toWei(amount, 'ether')),
                     resultAmount = tokenPrice * (amount - maxCommission);
 
                 let balance = ethRPC.eth.getBalance(user.address);
 
                 if(parseInt(balance) < parseInt(amountInWei)){
-                    amountInWei = balance;
+                    amountInWei = parseInt(balance);
                 }
 
-                if(amountInWei < ethRPC.toWei(maxCommission, 'ether')) {
+                if(amountInWei < maxCommissionInWei) {
                     sendWarning('Invalid balance', {
                         amount      : ethRPC.toWei(amount, 'ether'),
                         balance     : balance,
-                        comission   : ethRPC.toWei(maxCommission, 'ether')
+                        comission   : maxCommissionInWei
                     });
                     return cb();
                 }
@@ -230,7 +231,7 @@ class Processor {
                 logger.info('[processTransaction][send transaction] : ', {
                     from    : user.address,
                     to      : config['ethereum']['crowdSaleContractAddress'],
-                    value   : amountInWei - ethRPC.toWei(maxCommission, 'ether'),
+                    value   : amountInWei - maxCommissionInWei,
                     balance : balance,
                     gas     : gas
                 });
