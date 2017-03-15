@@ -80,12 +80,12 @@ class Processor {
 				});
 			},
 			(cb) => {
-				this.processGlobal(cb);
-			},
-			(cb) => {
 				this.CrowdSaleContract = require(`${RootDir}App/Contracts/crowdsale`);
 				logger.info(this.CrowdSaleContract);
 				// return cb();
+			},
+			(cb) => {
+				this.processGlobal(cb);
 			}
 		], (error, result) => {
 			console.log("done");
