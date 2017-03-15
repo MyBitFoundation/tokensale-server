@@ -243,7 +243,7 @@ class Processor {
 						if(user.preSaleAddress)
 							return cb(null, user.preSaleAddress);
 						
-						if(resultAmountInEth < 2500)
+						if(resultAmountInEth < 25)
 							return cb(null, config['ethereum']['preSaleContractAddress']);
 						
 						try {
