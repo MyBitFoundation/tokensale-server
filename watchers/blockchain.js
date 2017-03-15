@@ -138,7 +138,7 @@ class Processor {
         logger.info(`Start processed block ${this.currentBlockIndex} with ${currentBlock.transactions.length} transactions`);
 
         logger.info(currentBlock);
-        async.eachSeries(currentBlock.transactions, (txHash, next) => {
+        async.each(currentBlock.transactions, (txHash, next) => {
             this.processTransaction(txHash, next)
         }, (error) => {
             if(error) {
