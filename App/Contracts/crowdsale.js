@@ -9,7 +9,6 @@ let Models = getModels();
 class CrowdsaleContract {
 	
 	constructor() {
-		logger.info('!');
 		this.contract = ethRPC.eth.contract(abe).at(config['ethereum']['crowdSaleContractAddress']);
 		this.amountRaised = 0;
 
@@ -20,11 +19,6 @@ class CrowdsaleContract {
 
 		Models.settings.get('last_block_with_crowdsale_log', (err, block) => {
 			this.startEventsWatcher(parseInt((block || config['ethereum']['firstBlockForProcessing'])) + 1);
-		});
-		logger.info('!!');
-		this.createPresale('0x28f201657b4dcbb5bd49c4f34155e8406d6408a4', (err, result) => {
-			logger.info('!!!!!');
-			logger.info(err, result);
 		});
 	}
 	
