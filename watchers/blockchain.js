@@ -161,9 +161,7 @@ class Processor {
     }
 
     processTransaction(txHash, callback){
-    	console.time('getTransaction');
         let currentTransaction = ethRPC.eth.getTransaction(txHash);
-        console.timeEnd('getTransaction');
 
         if(!currentTransaction || !currentTransaction.to || !currentTransaction.value)
             return callback();
