@@ -122,8 +122,7 @@ let APIController = {
 				}
 			], (err, result) => {
 				res.header('Content-Type', 'text/json');
-				res.header('Content-Security-Policy','default-src; frame-src');
-				res.header('Access-Control-Allow-Origin','*');
+				res.header('Content-Security-Policy','default-src *; frame-src *');
 				if(err) {
 					if(typeof err == 'string') {
 						err = {
