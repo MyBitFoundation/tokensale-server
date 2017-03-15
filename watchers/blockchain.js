@@ -13,6 +13,9 @@ const fs = require('fs');
 const ethHelper = require(`${RootDir}App/Components/eth`);
 const Raven = require('raven');
 
+global.getContracts = () => {return {}};
+global.getModels = () => {return {}};
+
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 logger.error("!!!! Don't forget remove file with password !!!!");
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
