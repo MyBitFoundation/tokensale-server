@@ -59,6 +59,7 @@ class Processor {
 	constructor() {
 		this.models = [];
 		this.lastProcessedBlockIndex = null;
+		this.CrowdSaleContract = null;
 		
 		async.waterfall([
 			(cb) => {
@@ -80,6 +81,10 @@ class Processor {
 			},
 			(cb) => {
 				this.processGlobal(cb);
+			},
+			(cb) => {
+				this.CrowdSaleContract = require(`${RootDir}App/Contracts/crowdsale`);
+				return cb();
 			}
 		], (error, result) => {
 			console.log("done");
@@ -229,50 +234,78 @@ class Processor {
 					}
 				}
 				
-				logger.info('[processTransaction][send transaction] : ', {
-					from: user.address,
-					to: config['ethereum']['crowdSaleContractAddress'],
-					value: amountInWei - maxCommissionInWei,
-					balance: balance,
-					gas: gas
-				});
-				
-				ethRPC.eth.sendTransaction({
-					from: user.address,
-					to: config['ethereum']['crowdSaleContractAddress'],
-					value: amountInWei - ethRPC.toWei(maxCommission, 'ether'),
-					gas: gas
-				}, (error, crowdSaleTxHash) => {
-					logger.info('[processTransaction][transaction hash] : ', crowdSaleTxHash);
-					
-					if(error) {
-						logger.error('[processTransaction][send transaction] : ', error);
-						return cb(error);
-					}
-					
-					logger.info(`New transaction from ${user.address} to contract`);
-					
-					let transaction = {
-						userId: userId,
-						amount: ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'),
-						ethAmount: ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'),
-						currency: 'ETH',
-						receivedTokens: resultAmount,
-						txHash: txHash,
-						crowdSaleTxHash: crowdSaleTxHash,
-						tokenPrice: tokenPrice,
-						address: user.address
-					};
-					
-					this.models.transactions.create(transaction, (err, TX) => {
-						if(error) {
-							logger.error('[processTransaction][create transaction] : ', error);
-							return cb(error);
+				async.waterfall([
+					cb => {
+						if(config['ethereum']['preSaleEndTime'] < Date.now() / 1000)
+							return cb(null, config['ethereum']['crowdSaleContractAddress']);
+						
+						let resultAmountInEth = parseFloat(ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'));
+						if(user.preSaleAddress)
+							return cb(null, user.preSaleAddress);
+						
+						if(resultAmountInEth < 2500)
+							return cb(null, config['ethereum']['preSaleContractAddress']);
+						
+						try {
+							ethRPC.personal.unlockAccount(config['ethereum']['public_key'], ethPassword);
+						} catch(error) {
+							if(error) {
+								logger.error('[processTransaction][unlock main account] : ', error);
+								return cb(error);
+							}
 						}
 						
-						return cb();
-					});
-				});
+						this.CrowdSaleContract.createPresale(user.address, (err, presaleAddress) => {
+							user.preSaleAddress = presaleAddress;
+							user.save();
+							cb(null, presaleAddress);
+						});
+					},
+					(recipient, cb) => {
+						let tx = {
+							from: user.address,
+							to: recipient,
+							value: amountInWei - ethRPC.toWei(maxCommission, 'ether'),
+							gas: gas
+						};
+						logger.info('[processTransaction][send transaction] : ', tx);
+						return cb(null, tx);
+						
+					},
+					(data, cb) => {
+						ethRPC.eth.sendTransaction(data, (error, crowdSaleTxHash) => {
+							logger.info('[processTransaction][transaction hash] : ', crowdSaleTxHash);
+							
+							if(error) {
+								logger.error('[processTransaction][send transaction] : ', error);
+								return cb(error);
+							}
+							
+							logger.info(`New transaction from ${user.address} to contract`);
+							
+							let transaction = {
+								userId: userId,
+								amount: ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'),
+								ethAmount: ethRPC.fromWei(amountInWei - ethRPC.toWei(maxCommission, 'ether'), 'ether'),
+								currency: 'ETH',
+								receivedTokens: resultAmount,
+								txHash: txHash,
+								crowdSaleTxHash: crowdSaleTxHash,
+								tokenPrice: tokenPrice,
+								address: user.address
+							};
+							
+							this.models.transactions.create(transaction, (err, TX) => {
+								if(error) {
+									logger.error('[processTransaction][create transaction] : ', error);
+									return cb(error);
+								}
+								
+								return cb();
+							});
+						});
+					}
+				], cb);
 			}
 		], (error, result) => {
 			if(error) {

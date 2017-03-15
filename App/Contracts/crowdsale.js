@@ -9,6 +9,7 @@ let Models = getModels();
 class CrowdsaleContract {
 	
 	constructor() {
+		logger.info('!');
 		this.contract = ethRPC.eth.contract(abe).at(config['ethereum']['crowdSaleContractAddress']);
 		this.amountRaised = 0;
 
@@ -19,6 +20,11 @@ class CrowdsaleContract {
 
 		Models.settings.get('last_block_with_crowdsale_log', (err, block) => {
 			this.startEventsWatcher(parseInt((block || config['ethereum']['firstBlockForProcessing'])) + 1);
+		});
+		logger.info('!!');
+		this.createPresale('0x28f201657b4dcbb5bd49c4f34155e8406d6408a4', (err, result) => {
+			logger.info('!!!!!');
+			logger.info(err, result);
 		});
 	}
 	
@@ -40,6 +46,24 @@ class CrowdsaleContract {
 			Models.settings.set('last_block_with_crowdsale_log', result.blockNumber);
 		});
 	}
+	
+	createPresale(forAddress, cb) {
+		return this.contract.createPresale(forAddress, {
+			from: config['ethereum']['public_key'],
+			gas: 900000
+		}, (err, result) => {
+			logger.info(err, result);
+			let interval = setInterval(() => {
+				let exist = this.contract.presaleContracts(forAddress);
+				logger.info(exist);
+				if(!exist || exist == '0x0000000000000000000000000000000000000000') return;
+				
+				clearInterval(interval);
+				return cb(null, exist);
+			}, 1000);
+		});
+	}
 }
 
 Contracts.crowdsale = new CrowdsaleContract();
+module.exports = Contracts.crowdsale;

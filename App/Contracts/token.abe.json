@@ -6,8 +6,7 @@
 		"outputs": [
 			{
 				"name": "",
-				"type": "string",
-				"value": "MyBit"
+				"type": "string"
 			}
 		],
 		"payable": false,
@@ -42,8 +41,7 @@
 		"outputs": [
 			{
 				"name": "",
-				"type": "uint256",
-				"value": "7150000"
+				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -82,8 +80,7 @@
 		"outputs": [
 			{
 				"name": "",
-				"type": "uint8",
-				"value": "4"
+				"type": "uint8"
 			}
 		],
 		"payable": false,
@@ -96,8 +93,7 @@
 		"outputs": [
 			{
 				"name": "",
-				"type": "string",
-				"value": "Token 0.1"
+				"type": "string"
 			}
 		],
 		"payable": false,
@@ -115,8 +111,7 @@
 		"outputs": [
 			{
 				"name": "",
-				"type": "uint256",
-				"value": "0"
+				"type": "uint256"
 			}
 		],
 		"payable": false,
@@ -146,8 +141,7 @@
 		"outputs": [
 			{
 				"name": "",
-				"type": "address",
-				"value": "0xc6cc97a710f282dcb41c74f72c91bb0b8557637e"
+				"type": "address"
 			}
 		],
 		"payable": false,
@@ -160,10 +154,22 @@
 		"outputs": [
 			{
 				"name": "",
-				"type": "string",
-				"value": "MyBit"
+				"type": "string"
 			}
 		],
+		"payable": false,
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "changeOwner",
+		"outputs": [],
 		"payable": false,
 		"type": "function"
 	},
@@ -226,23 +232,9 @@
 		"outputs": [
 			{
 				"name": "",
-				"type": "uint256",
-				"value": "0"
+				"type": "uint256"
 			}
 		],
-		"payable": false,
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "transferOwnership",
-		"outputs": [],
 		"payable": false,
 		"type": "function"
 	},
@@ -250,43 +242,19 @@
 		"inputs": [
 			{
 				"name": "initialSupply",
-				"type": "uint256",
-				"index": 0,
-				"typeShort": "uint",
-				"bits": "256",
-				"displayName": "initial Supply",
-				"template": "elements_input_uint",
-				"value": "0"
+				"type": "uint256"
 			},
 			{
 				"name": "tokenName",
-				"type": "string",
-				"index": 1,
-				"typeShort": "string",
-				"bits": "",
-				"displayName": "token Name",
-				"template": "elements_input_string",
-				"value": "MyBit"
+				"type": "string"
 			},
 			{
 				"name": "decimalUnits",
-				"type": "uint8",
-				"index": 2,
-				"typeShort": "uint",
-				"bits": "8",
-				"displayName": "decimal Units",
-				"template": "elements_input_uint",
-				"value": "4"
+				"type": "uint8"
 			},
 			{
 				"name": "tokenSymbol",
-				"type": "string",
-				"index": 3,
-				"typeShort": "string",
-				"bits": "",
-				"displayName": "token Symbol",
-				"template": "elements_input_string",
-				"value": "MyBit"
+				"type": "string"
 			}
 		],
 		"payable": false,

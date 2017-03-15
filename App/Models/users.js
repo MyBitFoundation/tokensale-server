@@ -14,33 +14,36 @@ let main = (Connect) => {
 			type: String,
 			required: true
 		},
-		tfa : {
-			type : Boolean,
-			required : false,
-			default : false
+		tfa: {
+			type: Boolean,
+			required: false,
+			default: false
 		},
-		secret : {
-			type : String,
-			required : false,
-			default : null
+		secret: {
+			type: String,
+			required: false,
+			default: null
 		},
-		balance : {
-			type : Number,
-			default : 0,
-			required : true
+		balance: {
+			type: Number,
+			default: 0,
+			required: true
 		},
-		privateKey : {
-            type : String,
-            required : true
+		privateKey: {
+			type: String,
+			required: true
 		},
-		publicKey : {
-            type : String,
-            required : true
+		publicKey: {
+			type: String,
+			required: true
 		},
-        address : {
-            type : String,
-            required : true
-        },
+		address: {
+			type: String,
+			required: true
+		},
+		preSaleAddress: {
+			type: String
+		},
 		disabled: {
 			type: Boolean,
 			default: false
