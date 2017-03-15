@@ -40,24 +40,6 @@ class CrowdsaleContract {
 			Models.settings.set('last_block_with_crowdsale_log', result.blockNumber);
 		});
 	}
-	
-	createPresale(forAddress, cb) {
-		return this.contract.createPresale(forAddress, {
-			from: forAddress,
-			gas: 900000
-		}, (err, result) => {
-			logger.info(err, result);
-			let interval = setInterval(() => {
-				let exist = this.contract.presaleContracts(forAddress);
-				logger.info(exist);
-				if(!exist || exist == '0x0000000000000000000000000000000000000000') return;
-				
-				clearInterval(interval);
-				return cb(null, exist);
-			}, 1000);
-		});
-	}
 }
 
 Contracts.crowdsale = new CrowdsaleContract();
-module.exports = Contracts.crowdsale;

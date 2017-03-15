@@ -13,9 +13,6 @@ const fs = require('fs');
 const ethHelper = require(`${RootDir}App/Components/eth`);
 const Raven = require('raven');
 
-global.getContracts = () => {return {}};
-global.getModels = () => {return {}};
-
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 logger.error("!!!! Don't forget remove file with password !!!!");
 logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -83,7 +80,7 @@ class Processor {
 				});
 			},
 			(cb) => {
-				this.CrowdSaleContract = require(`${RootDir}App/Contracts/crowdsale`);
+				this.CrowdSaleContract = require(`${RootDir}App/Contracts/crowdsale.simple`);
 				logger.info(this.CrowdSaleContract);
 				// return cb();
 			},
