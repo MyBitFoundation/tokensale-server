@@ -119,8 +119,8 @@ contract Crowdsale is owned{
         tresholds.push(155000000);
         tresholds.push(225000000);
         tresholds.push(2**256 - 1);
-        prices.push(75000 szabo);
-        prices.push(85000 szabo);
+        prices.push(7500 szabo);
+        prices.push(8500 szabo);
         prices.push(9 finney);
         prices.push(10 finney);
         prices.push(2**256 - 1);
@@ -234,7 +234,7 @@ contract Presale is owned{
     uint saleStart;
     uint256 minimalPrice = 75000 szabo;
     modifier beforeStart() {if (now >= saleStart) throw; _;}
-    modifier afterStart() {if (now >= saleStart) throw; _;}
+    modifier afterStart() {if (now < saleStart) throw; _;}
 
     function Presale(uint _saleStart) payable
     {
