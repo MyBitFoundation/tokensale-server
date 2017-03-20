@@ -27,15 +27,19 @@ class CrowdsaleController {
 	}
 	
 	getTokenPrice() {
-		if(!Contracts.crowdsale.amountRaised || Contracts.crowdsale.amountRaised < 2000) {
-			return 250;
-		} else if(Contracts.crowdsale.amountRaised < 8000) {
-			return 150;
-		} else {
-			return 100;
-		}
+        switch (true){
+            case (Contracts.crowdsale.currentStage == '0' && parseFloat(Contracts.crowdsale.amountRaised) >= 2500):
+                return 0.0075;
+            case (Contracts.crowdsale.currentStage == '0' && parseFloat(Contracts.crowdsale.amountRaised) < 2500):
+            case Contracts.crowdsale.currentStage == '1':
+                return 0.0085;
+            case Contracts.crowdsale.currentStage == '2':
+                return 0.009;
+            case Contracts.crowdsale.currentStage == '3':
+                return 0.01;
+        }
 	}
-	
+
 	deposit(callback, data) {
 		let {currency} = data._post,
 			{_id : userId, address} = data.user;

@@ -60,7 +60,7 @@ class Processor {
 		this.models = [];
 		this.lastProcessedBlockIndex = null;
 		this.CrowdSaleContract = null;
-		
+
 		async.waterfall([
 			(cb) => {
 				require(`${RootDir}App/Controllers/modelsWrapper`)((err, mongoModels) => {
@@ -68,7 +68,7 @@ class Processor {
 						logger.error("Error in init models:", err);
 						return cb(err);
 					}
-					
+
 					this.models = mongoModels;
 					cb();
 				});
@@ -94,13 +94,18 @@ class Processor {
 	getTokenPrice() {
 		let contract = ethRPC.eth.contract(abe).at(config['ethereum']['crowdSaleContractAddress']);
 		let amountRaised = contract.amountRaised() / 1000000000000000000;
-		
-		if(!amountRaised || amountRaised < 2000) {
-			return 250;
-		} else if(amountRaised < 8000) {
-			return 150;
-		} else {
-			return 100;
+		let currentStage = contract.currentStage().toString();
+
+		switch (true){
+			case (currentStage == '0' && parseFloat(amountRaised) >= 2500):
+				return 0.0075;
+            case (currentStage == '0' && parseFloat(amountRaised) < 2500):
+            case currentStage == '1':
+            	return 0.0085;
+            case currentStage == '2':
+                return 0.009;
+            case currentStage == '3':
+                return 0.01;
 		}
 	}
 	
@@ -208,7 +213,7 @@ class Processor {
 					maxCommissionInWei = parseInt(ethRPC.toWei(maxCommission, 'ether')),
 					amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 					amountInWei = parseInt(ethRPC.toWei(amount, 'ether')),
-					resultAmount = tokenPrice * (amount - maxCommission);
+					resultAmount = (amount - maxCommission) / tokenPrice;
 				
 				let balance = ethRPC.eth.getBalance(user.address);
 				

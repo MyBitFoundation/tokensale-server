@@ -118,6 +118,7 @@ let AuthorityController = {
 				tfa,
 				lastLoginDate,
 				tokenPrice : Controllers.crowdsale.getTokenPrice(),
+				precision : Contracts.token.precision,
 				amountRaised : Contracts.crowdsale.amountRaised || 0
 			});
 		});

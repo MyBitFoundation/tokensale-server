@@ -22,7 +22,7 @@ class TokenContract {
 	
 	initialize() {
 		if(this.initIteration > 3) {
-			sendWarning('TockenContract not initialized', {Contracts});
+			sendWarning('TokenContract not initialized', {Contracts});
 		}
 		if(!Contracts.crowdsale || !Contracts.crowdsale.tokenRewardAddress) {
 			Contracts = getContracts();
