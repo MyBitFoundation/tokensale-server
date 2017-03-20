@@ -202,7 +202,7 @@ class CronController {
 				}, (err) => {
 					let result = {};
 					cryptoRates.forEach(row => {
-						result[row[0]] = row[1].div(tokenPrice).toFixed(6);
+						result[row[0]] = row[1].mul(tokenPrice).toFixed(6);
 					});
 					callback(null, result);
 				});
@@ -254,7 +254,7 @@ class CronController {
 
                     }, (err) => {
                         callback(null, Object.assign({}, ...fiatRates.map((info) => {
-                            return {[info.name]: (info.rate / tokenPrice).toFixed(6)};
+                            return {[info.name]: (info.rate * tokenPrice).toFixed(6)};
                         })));
                     });
                 } else {
@@ -312,7 +312,7 @@ class CronController {
                         if(err) return callback(err);
 
                         callback(null, Object.assign({}, ...results.fiat_usd.map((info) => {
-                            return {[info.key]: (info.rate * results.usd_eth / tokenPrice).toFixed(6)};
+                            return {[info.key]: (info.rate * results.usd_eth * tokenPrice).toFixed(6)};
                         })));
                     });
                 }
