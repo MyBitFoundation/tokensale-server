@@ -158,6 +158,10 @@ class CrowdsaleController {
 					userId: userId
 				}, (err, list) => {
 					list.forEach(Tx => {
+						let tokenPrice = 1 / Tx.tokenPrice;
+						if(Tx.currency != 'ETH') {
+							tokenPrice = Tx.receivedTokens / Tx.amount;
+						}
 						transactions.push({
 							date: moment(Tx.createdAt).format('YYYY-MM-DD HH:mm:ss'),
 							sentAmount: parseFloat(Tx.amount),
@@ -166,7 +170,7 @@ class CrowdsaleController {
 							address: Tx.address || '',
 							receivedAmount: parseFloat(Tx.receivedTokens),
 							// rate: parseInt(dwallet.transaction.incomingCoin / wallet.transaction.fundAmount),
-							tokenPrice: Tx.currency == 'ETH' ? (parseInt(Tx.tokenPrice) || 250) : parseFloat(Tx.receivedTokens / Tx.amount).toFixed(4)
+							tokenPrice: parseFloat(tokenPrice).toFixed(4)
 						});
 					});
 					return cb(null, transactions);

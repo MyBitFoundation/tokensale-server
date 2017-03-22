@@ -114,10 +114,10 @@ contract Crowdsale is owned{
         address _beneficiary,
         address _founders
     ) {
-        tresholds.push(45000000);
-        tresholds.push(95000000);
-        tresholds.push(155000000);
-        tresholds.push(225000000);
+        tresholds.push(4500000);
+        tresholds.push(9500000);
+        tresholds.push(15500000);
+        tresholds.push(22500000);
         tresholds.push(2**256 - 1);
         prices.push(7500 szabo);
         prices.push(8500 szabo);
@@ -127,7 +127,7 @@ contract Crowdsale is owned{
         presaleDeadline = now + presaleDuration * 1 minutes;
         beneficiary = msg.sender;
         deadline = now + (durationInMinutes + presaleDuration) * 1 minutes;
-        tokenReward = new CSToken(0, '0', 0, '0');
+        tokenReward = new CSToken(0, 'MyBit Token', 8, 'MyB');
         presales.push(new Presale(presaleDeadline));
         founders = _founders;
         beneficiary = _beneficiary;
@@ -178,6 +178,7 @@ contract Crowdsale is owned{
         if (currentStage == 0)
             if (msg.sender == expectedGather) {return;} else {throw;}
         if (now > deadline) throw;
+        if (currentStage == 0) throw;
         processPayment(msg.sender, msg.value);
     }
 
@@ -252,6 +253,3 @@ contract Presale is owned{
         if (!Crowdsale(owner).send(this.balance)) throw;
     }
 }
-
-0x10Bb635Bf887dfcE8558964e2399D11a757bEd99
-0x0a63b0E3e25600DdF0D4A9F357b911bbe961F65a
