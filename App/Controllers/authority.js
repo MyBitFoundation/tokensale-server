@@ -117,7 +117,7 @@ let AuthorityController = {
 				address : address ? address.slice(2) : null,
 				tfa,
 				lastLoginDate,
-				tokenPrice : Controllers.crowdsale.getTokenPrice(),
+				tokenPrice : (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
 				precision : Contracts.token.precision,
 				amountRaised : Contracts.crowdsale.amountRaised || 0
 			});

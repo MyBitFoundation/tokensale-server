@@ -26,16 +26,19 @@ class CrowdsaleController {
 		logger.info('Crowdsale controller initialized');
 	}
 	
-	getTokenPrice() {
+	getTokenPrice(amountEth) {
+		let stage = Contracts.crowdsale.currentStage;
+		amountEth = amountEth ? parseFloat(amountEth) : 0;
+
         switch (true){
-            case (Contracts.crowdsale.currentStage == '0' && parseFloat(Contracts.crowdsale.amountRaised) >= 2500):
+            case (stage == '0' && amountEth >= 2500):
                 return 0.0075;
-            case (Contracts.crowdsale.currentStage == '0' && parseFloat(Contracts.crowdsale.amountRaised) < 2500):
-            case Contracts.crowdsale.currentStage == '1':
+            case (stage == '0' && amountEth < 2500):
+            case stage == '1':
                 return 0.0085;
-            case Contracts.crowdsale.currentStage == '2':
+            case stage == '2':
                 return 0.009;
-            case Contracts.crowdsale.currentStage == '3':
+            case stage == '3':
                 return 0.01;
         }
 	}
