@@ -91,7 +91,7 @@ let AuthorityController = {
 						return cb('Login error');
 					}
 					
-					return Controllers.authority.me(cb, data);
+					return Controllers.authority.info(cb, data);
 				});
 			});
 		})(req, res, cb);
@@ -100,7 +100,7 @@ let AuthorityController = {
 		data.req.logout();
 		cb();
 	},
-	me(cb, data) {
+	info(cb, data) {
 		let { email, balance, tfa, lastLoginDate, publicKey } = data.req.session.passport.user,
 			address = ethHelper.addressFromPublic(publicKey);
 
