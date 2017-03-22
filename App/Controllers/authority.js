@@ -111,6 +111,17 @@ let AuthorityController = {
 				logger.error(`Not found user ${data.user._id}`);
 				return cb(`Unknown error`);
 			}
+
+			let tokenPrice = Controllers.crowdsale.getTokenPrice();
+			let amountRaised = Contracts.crowdsale.amountRaised || 0;
+			let amountRaisedEUR = (
+                tokenPrice &&
+				amountRaised &&
+				Controllers.crowdsale.ratesData &&
+				Controllers.crowdsale.ratesData.fiat &&
+                Controllers.crowdsale.ratesData.fiat['EUR']
+			) ? parseFloat(Controllers.crowdsale.ratesData.fiat['EUR'] / tokenPrice * amountRaised).toFixed(6) : 0;
+
 			cb(null, {
 				email,
 				balance : parseFloat(User.balance),
@@ -119,7 +130,8 @@ let AuthorityController = {
 				lastLoginDate,
 				tokenPrice : (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
 				precision : Contracts.token.precision,
-				amountRaised : Contracts.crowdsale.amountRaised || 0
+                amountRaised,
+                amountRaisedEUR
 			});
 		});
 	}
