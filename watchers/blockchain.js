@@ -79,8 +79,8 @@ function checkAllBalances() {
 			} catch(error) {
 				logger.error('[processTransaction][unlock account] : ', error);
 			}
+			break;
 		}
-		break;
 	}
 	console.log("  Total balance: " + totalBal + " ether");
 }
