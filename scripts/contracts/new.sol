@@ -85,6 +85,7 @@ contract CSToken is owned {
 }
 contract Crowdsale is owned{
     uint public currentStage = 0;
+    uint public crowdsaleStarted = 0;
     uint[] public tresholds;
     uint[] public prices;
     address[] funders;
@@ -95,6 +96,7 @@ contract Crowdsale is owned{
     uint public deadline;
     uint public presaleDeadline;
     uint public tokensRaised;
+    uint public tokenMultiplier = 10;
     CSToken public tokenReward;
     mapping(address => uint256) public balanceOf;
     mapping(address => address) public presaleContracts;
@@ -131,16 +133,24 @@ contract Crowdsale is owned{
         presales.push(new Presale(presaleDeadline));
         founders = _founders;
         beneficiary = _beneficiary;
+        tokenMultiplier = tokenMultiplier**tokenReward.decimals();
     }
     function processPayment(address from, uint amount) internal
     {
+        if(currentStage > 3) {
+            if (from.send(amount)){
+                FundTransfer(from, amount, false);
+            }
+            return;
+        }
         FundTransfer(from, amount, false);
         uint price = prices[currentStage];
+        price = price / tokenMultiplier;
         // if (currentStage == 0 && amount < 2500 ether)
         //    price = prices[currentStage + 1];
         uint256 tokenAmount = amount / price;
 
-        if (tokensRaised + tokenAmount > tresholds[currentStage])
+        if (tokensRaised + tokenAmount > tresholds[currentStage] * tokenMultiplier)
         {
             uint256 currentTokens = tresholds[currentStage] - tokensRaised;
             uint256 currentAmount = currentTokens * price;
@@ -149,8 +159,8 @@ contract Crowdsale is owned{
             amountRaised += currentAmount;
 
             tokenReward.mintToken(from, currentTokens);
-            tokenReward.mintToken(beneficiary, amount / price * 22 / 1000);
-            tokenReward.mintToken(founders, amount / price * 88 / 1000);
+            tokenReward.mintToken(beneficiary, currentTokens * 22 / 1000);
+            tokenReward.mintToken(founders, currentTokens * 88 / 1000);
             FundTransfer(from, amount, true);
             currentStage++;
             processPayment(from, amount - currentAmount);
@@ -160,8 +170,8 @@ contract Crowdsale is owned{
         amountRaised += amount;
         tokensRaised += tokenAmount;
         tokenReward.mintToken(from, tokenAmount);
-        tokenReward.mintToken(beneficiary, amount / price * 22 / 1000);
-        tokenReward.mintToken(founders, amount / price * 88 / 1000);
+        tokenReward.mintToken(beneficiary, tokenAmount * 22 / 1000);
+        tokenReward.mintToken(founders, tokenAmount * 88 / 1000);
         FundTransfer(from, amount, true);
         uint256 change = amount - tokenAmount * price;
         if(change > 0)
@@ -176,9 +186,9 @@ contract Crowdsale is owned{
 
     function () payable {
         if (currentStage == 0)
-            if (msg.sender == expectedGather) {return;} else {throw;}
+            if (msg.sender == expectedGather) {return;}
         if (now > deadline) throw;
-        if (currentStage == 0) throw;
+        if (crowdsaleStarted == 0) throw;
         processPayment(msg.sender, msg.value);
     }
 
@@ -192,8 +202,9 @@ contract Crowdsale is owned{
         for (uint g = 0; g < funders.length; g++){
             processPayment(funders[g], this.amounts(g));
         }
-        if (currentStage == 0)
-            currentStage++;
+        crowdsaleStarted++;
+        // if (currentStage == 0)
+        //    currentStage++;
     }
 
     function createPresale(address payer) onPresale returns (address) {
