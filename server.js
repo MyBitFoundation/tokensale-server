@@ -104,7 +104,7 @@ let Server = {
 			let emails = result.map(row => {
 				return row.email;
 			});
-			console.log(emails);
+			console.log(JSON.stringify(emails, null, 2));
 		});
 
 	}
