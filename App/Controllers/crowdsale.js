@@ -31,9 +31,8 @@ class CrowdsaleController {
 		amountEth = amountEth ? parseFloat(amountEth) : 0;
 
         switch (true){
-            case (stage == '0' && amountEth >= 2500):
+            case (stage == '0'):
                 return 0.0075;
-            case (stage == '0' && amountEth < 2500):
             case stage == '1':
                 return 0.0085;
             case stage == '2':

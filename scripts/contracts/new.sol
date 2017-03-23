@@ -136,8 +136,8 @@ contract Crowdsale is owned{
     {
         FundTransfer(from, amount, false);
         uint price = prices[currentStage];
-        if (currentStage == 0 && amount < 2500 ether)
-            price = prices[currentStage + 1];
+        // if (currentStage == 0 && amount < 2500 ether)
+        //    price = prices[currentStage + 1];
         uint256 tokenAmount = amount / price;
 
         if (tokensRaised + tokenAmount > tresholds[currentStage])
@@ -149,8 +149,8 @@ contract Crowdsale is owned{
             amountRaised += currentAmount;
 
             tokenReward.mintToken(from, currentTokens);
-            tokenReward.mintToken(beneficiary, amount / price * 29 / 100);
-            tokenReward.mintToken(founders, amount / price * 14 / 100);
+            tokenReward.mintToken(beneficiary, amount / price * 22 / 1000);
+            tokenReward.mintToken(founders, amount / price * 88 / 1000);
             FundTransfer(from, amount, true);
             currentStage++;
             processPayment(from, amount - currentAmount);
@@ -160,8 +160,8 @@ contract Crowdsale is owned{
         amountRaised += amount;
         tokensRaised += tokenAmount;
         tokenReward.mintToken(from, tokenAmount);
-        tokenReward.mintToken(beneficiary, amount / price * 29 / 100);
-        tokenReward.mintToken(founders, amount / price * 14 / 100);
+        tokenReward.mintToken(beneficiary, amount / price * 22 / 1000);
+        tokenReward.mintToken(founders, amount / price * 88 / 1000);
         FundTransfer(from, amount, true);
         uint256 change = amount - tokenAmount * price;
         if(change > 0)

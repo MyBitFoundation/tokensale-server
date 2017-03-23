@@ -129,9 +129,8 @@ class Processor {
 		let currentStage = contract.currentStage().toString();
 		
 		switch(true) {
-			case (currentStage == '0' && parseFloat(amountEth) >= 2500):
+			case (currentStage == '0'):
 				return 0.0075;
-			case (currentStage == '0' && parseFloat(amountEth) < 2500):
 			case currentStage == '1':
 				return 0.0085;
 			case currentStage == '2':
