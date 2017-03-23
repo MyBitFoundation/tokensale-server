@@ -64,7 +64,11 @@ function checkAllBalances() {
 		var acct = web3.eth.accounts[acctNum];
 		var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
 		totalBal += parseFloat(acctBal);
-		console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + acctBal + " ether");
+		if(acctBal) {
+			console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + acctBal + " ether");
+			ethRPC.personal.unlockAccount(acct, ethPassword);
+		}
+		
 	}
 	console.log("  Total balance: " + totalBal + " ether");
 }
