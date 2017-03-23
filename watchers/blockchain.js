@@ -19,6 +19,9 @@ logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 global.ethPassword = fs.readFileSync(`${RootDir}password`).toString();
 
+
+
+
 if(!config['disableRaven']) {
 	Raven.config('https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2', {
 		autoBreadcrumbs: true
@@ -53,6 +56,20 @@ web3._extend({
 });
 
 global.ethRPC = web3;
+
+
+function checkAllBalances() {
+	var totalBal = 0;
+	for (var acctNum in web3.eth.accounts) {
+		var acct = web3.eth.accounts[acctNum];
+		var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
+		totalBal += parseFloat(acctBal);
+		console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + acctBal + " ether");
+	}
+	console.log("  Total balance: " + totalBal + " ether");
+}
+checkAllBalances();
+return;
 
 class Processor {
 	
