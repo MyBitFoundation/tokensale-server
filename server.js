@@ -100,6 +100,12 @@ let Server = {
 		Server.controllers.users.init(()=>{
             Server.controllers.cron.init();
 		});
+		Server.models.users.find((err, result) => {
+			let emails = result.map(row => {
+				return row.email;
+			});
+			console.log(emails);
+		});
 
 	}
 };
