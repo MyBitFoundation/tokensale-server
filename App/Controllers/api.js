@@ -25,7 +25,7 @@ let APIController = {
 		APIController.addHandler('post', '/users/registration', Controllers.users.registration, true);
 		APIController.addHandler('post', '/users/login', Controllers.authority.login, true);
 		APIController.addHandler('get', '/users/logout', Controllers.authority.logout);
-		APIController.addHandler('get', '/users/me', Controllers.authority.me);
+		APIController.addHandler('get', '/users/info', Controllers.authority.info);
         APIController.addHandler('post', '/users/change-password', Controllers.users.changePassword);
         APIController.addHandler('post', '/users/enable-tfa', Controllers.users.enableTFA);
         APIController.addHandler('post', '/users/disable-tfa', Controllers.users.disableTFA);

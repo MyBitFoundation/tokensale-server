@@ -108,15 +108,15 @@ class Processor {
 		});
 	}
 	
-	getTokenPrice() {
+	getTokenPrice(amountEth) {
 		let contract = ethRPC.eth.contract(abe).at(config['ethereum']['crowdSaleContractAddress']);
-		let amountRaised = contract.amountRaised() / 1000000000000000000;
+		// let amountRaised = contract.amountRaised() / 1000000000000000000;
 		let currentStage = contract.currentStage().toString();
 
 		switch (true){
-			case (currentStage == '0' && parseFloat(amountRaised) >= 2500):
+			case (currentStage == '0' && parseFloat(amountEth) >= 2500):
 				return 0.0075;
-            case (currentStage == '0' && parseFloat(amountRaised) < 2500):
+            case (currentStage == '0' && parseFloat(amountEth) < 2500):
             case currentStage == '1':
             	return 0.0085;
             case currentStage == '2':
@@ -224,12 +224,12 @@ class Processor {
 				}
 				
 				let gas = 400000,
-					tokenPrice = this.getTokenPrice(),
 					userId = user._id,
 					maxCommission = ethRPC.fromWei(gas * ethRPC.eth.gasPrice, 'ether'),
 					maxCommissionInWei = parseInt(ethRPC.toWei(maxCommission, 'ether')),
 					amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 					amountInWei = parseInt(ethRPC.toWei(amount, 'ether')),
+                    tokenPrice = this.getTokenPrice(parseFloat(amount) ? parseFloat(amount) : 0),
 					resultAmount = (amount - maxCommission) / tokenPrice;
 				
 				let balance = ethRPC.eth.getBalance(user.address);

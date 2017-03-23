@@ -91,7 +91,7 @@ let AuthorityController = {
 						return cb('Login error');
 					}
 					
-					return Controllers.authority.me(cb, data);
+					return Controllers.authority.info(cb, data);
 				});
 			});
 		})(req, res, cb);
@@ -100,7 +100,7 @@ let AuthorityController = {
 		data.req.logout();
 		cb();
 	},
-	me(cb, data) {
+	info(cb, data) {
 		let { email, balance, tfa, lastLoginDate, publicKey } = data.req.session.passport.user,
 			address = ethHelper.addressFromPublic(publicKey);
 
@@ -111,15 +111,27 @@ let AuthorityController = {
 				logger.error(`Not found user ${data.user._id}`);
 				return cb(`Unknown error`);
 			}
+
+			let tokenPrice = Controllers.crowdsale.getTokenPrice();
+			let amountRaised = Contracts.crowdsale.amountRaised || 0;
+			let amountRaisedEUR = (
+                tokenPrice &&
+				amountRaised &&
+				Controllers.crowdsale.ratesData &&
+				Controllers.crowdsale.ratesData.fiat &&
+                Controllers.crowdsale.ratesData.fiat['EUR']
+			) ? parseFloat(Controllers.crowdsale.ratesData.fiat['EUR'] / tokenPrice * amountRaised).toFixed(6) : 0;
+
 			cb(null, {
 				email,
 				balance : parseFloat(User.balance),
 				address : address ? address.slice(2) : null,
 				tfa,
 				lastLoginDate,
-				tokenPrice : Controllers.crowdsale.getTokenPrice(),
+				tokenPrice : (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
 				precision : Contracts.token.precision,
-				amountRaised : Contracts.crowdsale.amountRaised || 0
+                amountRaised,
+                amountRaisedEUR
 			});
 		});
 	}

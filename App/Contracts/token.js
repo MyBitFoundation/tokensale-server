@@ -12,7 +12,7 @@ class TokenContract {
 	
 	constructor() {
         this.precision = 1;
-        
+
 		if(!config['ethereum']['rpc_enabled'])
 			return;
 		
