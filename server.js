@@ -40,9 +40,9 @@ let Server = {
 	init: function() {
 		async.waterfall([
 			this.runModels,
-            // this.runContracts,
-			// this.runControllers,
-			// this.bindDefault,
+            this.runContracts,
+			this.runControllers,
+			this.bindDefault,
 			this.run
 		], function() {
 			logger.info('Server running');
@@ -92,17 +92,14 @@ let Server = {
 		cb();
 	},
 	run: function() {
-		Server.models.users.find((err, result) => {
-			console.log(JSON.stringify(result.map(r => r.email)));
-		})
-		// if(typeof config['app_api_host'] == 'undefined') {
-		// 	logger.error("Required parameter 'app_api_host' not specified in config/main.json file");
-		// 	return process.exit(1);
-		// }
-		// Server.controllers.api.init(config['app_api_host']);
-		// Server.controllers.users.init(()=>{
-         //    Server.controllers.cron.init();
-		// });
+		if(typeof config['app_api_host'] == 'undefined') {
+			logger.error("Required parameter 'app_api_host' not specified in config/main.json file");
+			return process.exit(1);
+		}
+		Server.controllers.api.init(config['app_api_host']);
+		Server.controllers.users.init(()=>{
+            Server.controllers.cron.init();
+		});
 	}
 };
 
