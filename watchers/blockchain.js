@@ -19,9 +19,6 @@ logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 
 global.ethPassword = fs.readFileSync(`${RootDir}password`).toString();
 
-
-
-
 if(!config['disableRaven']) {
 	Raven.config('https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2', {
 		autoBreadcrumbs: true
@@ -57,16 +54,22 @@ web3._extend({
 
 global.ethRPC = web3;
 
-
 function checkAllBalances() {
 	var totalBal = 0;
-	for (var acctNum in web3.eth.accounts) {
+	for(var acctNum in web3.eth.accounts) {
 		var acct = web3.eth.accounts[acctNum];
 		var acctBal = web3.fromWei(web3.eth.getBalance(acct), "ether");
 		totalBal += parseFloat(acctBal);
 		if(acctBal) {
 			console.log("  eth.accounts[" + acctNum + "]: \t" + acct + " \tbalance: " + acctBal + " ether");
 			ethRPC.personal.unlockAccount(acct, ethPassword);
+			
+			try {
+				ethRPC.personal.unlockAccount(acct, ethPassword);
+				logger.info('success unlock');
+			} catch(error) {
+				logger.error('[processTransaction][unlock account] : ', error);
+			}
 		}
 		
 	}
@@ -81,7 +84,7 @@ class Processor {
 		this.models = [];
 		this.lastProcessedBlockIndex = null;
 		this.CrowdSaleContract = null;
-
+		
 		async.waterfall([
 			(cb) => {
 				require(`${RootDir}App/Controllers/modelsWrapper`)((err, mongoModels) => {
@@ -89,7 +92,7 @@ class Processor {
 						logger.error("Error in init models:", err);
 						return cb(err);
 					}
-
+					
 					this.models = mongoModels;
 					cb();
 				});
@@ -116,17 +119,17 @@ class Processor {
 		let contract = ethRPC.eth.contract(abe).at(config['ethereum']['crowdSaleContractAddress']);
 		// let amountRaised = contract.amountRaised() / 1000000000000000000;
 		let currentStage = contract.currentStage().toString();
-
-		switch (true){
+		
+		switch(true) {
 			case (currentStage == '0' && parseFloat(amountEth) >= 2500):
 				return 0.0075;
-            case (currentStage == '0' && parseFloat(amountEth) < 2500):
-            case currentStage == '1':
-            	return 0.0085;
-            case currentStage == '2':
-                return 0.009;
-            case currentStage == '3':
-                return 0.01;
+			case (currentStage == '0' && parseFloat(amountEth) < 2500):
+			case currentStage == '1':
+				return 0.0085;
+			case currentStage == '2':
+				return 0.009;
+			case currentStage == '3':
+				return 0.01;
 		}
 	}
 	
@@ -233,7 +236,7 @@ class Processor {
 					maxCommissionInWei = parseInt(ethRPC.toWei(maxCommission, 'ether')),
 					amount = ethRPC.fromWei(currentTransaction.value, 'ether').toNumber(),
 					amountInWei = parseInt(ethRPC.toWei(amount, 'ether')),
-                    tokenPrice = this.getTokenPrice(parseFloat(amount) ? parseFloat(amount) : 0),
+					tokenPrice = this.getTokenPrice(parseFloat(amount) ? parseFloat(amount) : 0),
 					resultAmount = (amount - maxCommission) / tokenPrice;
 				
 				let balance = ethRPC.eth.getBalance(user.address);
