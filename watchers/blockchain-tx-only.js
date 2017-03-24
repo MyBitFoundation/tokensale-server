@@ -109,7 +109,7 @@ class Processor {
 	}
 	
 	processGlobal() {
-		this.processTransaction('0xd6efa7e2c9b56616bf15210769898eab8975e07865aa6909d546f6df28076562', (err, result) => {
+		this.processTransaction('0x4dcd09920bb1d6adab7ccdf5f4da62874bb5e2533536ab6c32b6e2d95daa0476', (err, result) => {
 			logger.info('!!!!!!');
 			logger.info(err);
 			logger.info(result);
