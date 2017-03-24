@@ -75,6 +75,8 @@ class UsersController {
                 }
 
                 Models.users.create({email, password : passwordString, privateKey : encryptedPrivateKey, publicKey, address}, (err, user) => {
+	                if(err) return GlobalError('09:23', err, cb);
+	                
                     Controllers.users.users[user.address] = user._id;
 
                     if(err) return GlobalError('103232432', err, cb);
