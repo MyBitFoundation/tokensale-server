@@ -34,6 +34,8 @@ let APIController = {
         APIController.addHandler('get', '/crowdsale/transactions', Controllers.crowdsale.transactions);
         APIController.addHandler('get', '/crowdsale/rates', Controllers.crowdsale.rates, true);
         APIController.addHandler('get', '/crowdsale/exchange-amount', Controllers.crowdsale.exchangeAmount, true);
+        
+        APIController.addHandler('get', '/admin/payers', Controllers.admin.printPayers, 'admin');
 	},
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app: {},
@@ -100,8 +102,12 @@ let APIController = {
                         if(!user) {
                             return cb('User not logged', 403);
                         }
-
-                        if(req.user.password != user.password || req.user.tfa != user.tfa){
+	
+	                    if(isPublic == 'admin' && user.role != 'admin') {
+		                    return cb('Access denied', 403);
+	                    }
+		
+	                    if(req.user.password != user.password || req.user.tfa != user.tfa){
                             req.logout();
                         	req.session.destroy();
                             return cb('User not logged', 403);
