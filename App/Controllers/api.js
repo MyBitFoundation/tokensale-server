@@ -35,7 +35,7 @@ let APIController = {
         APIController.addHandler('get', '/crowdsale/rates', Controllers.crowdsale.rates, true);
         APIController.addHandler('get', '/crowdsale/exchange-amount', Controllers.crowdsale.exchangeAmount, true);
         
-        APIController.addHandler('get', '/admin/payers', Controllers.admin.printPayers, 'admin');
+        APIController.addHandler('get', '/admin/payers', Controllers.admin.printPayers, false, 'admin');
 	},
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app: {},
@@ -82,7 +82,7 @@ let APIController = {
 	/**
 	 * Register new route.
 	 */
-	addHandler: (type, route, action, isPublic) => {
+	addHandler: (type, route, action, isPublic, role) => {
 		if(typeof action != 'function') {
 			logger.warn(`Action for route ${type}:${route} is not function`);
 		}
@@ -92,7 +92,7 @@ let APIController = {
 			logger.info('Start request', route);
 			async.waterfall([
 				cb => {
-					if(isPublic && isPublic != 'admin') return cb();
+					if(isPublic) return cb();
 					if(!req.isAuthenticated()) return cb('User not logged', 403);
 
                     Models.users.findOne({ email : req.user.email }, (err, user) => {
@@ -103,7 +103,7 @@ let APIController = {
                             return cb('User not logged', 403);
                         }
 	
-	                    if(isPublic == 'admin' && user.role != 'admin') {
+	                    if(role && user.role != role) {
 		                    return cb('Access denied', 403);
 	                    }
 		

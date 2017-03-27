@@ -14,12 +14,12 @@ class AdminController {
 				Models.transactions.find({
 					userId: user._id.toString()
 				}, (err, txs) => {
-					// let sum = 0;
-					// txs.forEach(tx => {
-					// 	sum += tx.ethAmount;
-					// });
-					// result.push([user.email, user.balance, sum]);
-					// cb();
+					let sum = 0;
+					txs.forEach(tx => {
+						sum += tx.ethAmount;
+					});
+					result.push([user.email, user.balance, sum]);
+					cb();
 				});
 			}, () => {
 				cb(null, result);
