@@ -6,6 +6,7 @@ let Models = getModels(),
 class AdminController {
 	
 	printPayers(cb) {
+		return cb(null, {});
 		Models.users.find({
 			balance: {$gt: 0}
 		}, (err, users) => {
