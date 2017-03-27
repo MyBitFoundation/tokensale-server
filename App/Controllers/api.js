@@ -103,6 +103,7 @@ let APIController = {
                             return cb('User not logged', 403);
                         }
 	
+                        console.log(isPublic, user.role, isPublic == 'admin' && user.role != 'admin');
 	                    if(isPublic == 'admin' && user.role != 'admin') {
 		                    return cb('Access denied', 403);
 	                    }
