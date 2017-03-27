@@ -92,7 +92,7 @@ let APIController = {
 			logger.info('Start request', route);
 			async.waterfall([
 				cb => {
-					if(isPublic) return cb();
+					if(isPublic && isPublic != 'admin') return cb();
 					if(!req.isAuthenticated()) return cb('User not logged', 403);
 
                     Models.users.findOne({ email : req.user.email }, (err, user) => {
@@ -103,7 +103,6 @@ let APIController = {
                             return cb('User not logged', 403);
                         }
 	
-                        console.log(isPublic, user.role, isPublic == 'admin' && user.role != 'admin');
 	                    if(isPublic == 'admin' && user.role != 'admin') {
 		                    return cb('Access denied', 403);
 	                    }
