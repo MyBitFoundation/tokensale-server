@@ -226,8 +226,8 @@ class CronController {
 
                             let parsedData = JSON.parse(body);
 
-                            if(response.statusCode != 200){
-                                logger.warn('Get bravenewcoin error: ' + data.message);
+                            if(response.statusCode !== 200){
+                                logger.warn('Get bravenewcoin error: ' + parsedData.message);
                                 return next();
                             }
 

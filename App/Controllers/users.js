@@ -43,8 +43,14 @@ class UsersController {
 		if(!post.password || post.password.length < 6) {
 			return cb('Password is required and must contain at least 6 characters');
 		}
+		if(!post.address) {
+			return cb('Address is required');
+		}
+		if(!/^(0x)?[0-9a-f]{40}$/i.test(post.address)) {
+			return cb('Invalid address');
+		}
 		
-		let {email, password} = post;
+		let {email, password, address} = post;
 
 		let passwordString = passwordHash.generate(password);
 
@@ -52,29 +58,29 @@ class UsersController {
 		Models.users.findOne({email}, (err, exist) => {
 			if(exist) return cb(`User with email ${email} already exist`);
 
-            ethHelper.generateBrainKey(passwordString, email, (privateKey)=>{
-                if(!privateKey){
-                    return cb('User creation error');
-                }
+            // ethHelper.generateBrainKey(passwordString, email, (privateKey)=>{
+            //     if(!privateKey){
+            //         return cb('User creation error');
+            //     }
 
-                let encryptedPrivateKey = ethHelper.encryptWithPassword(privateKey, password),
-                    publicKey = ethHelper.publicFromPrivate(privateKey),
-                    address = ethHelper.addressFromPrivate(privateKey);
+                // let encryptedPrivateKey = ethHelper.encryptWithPassword(privateKey, password),
+                //     publicKey = ethHelper.publicFromPrivate(privateKey),
+                //     address = ethHelper.addressFromPrivate(privateKey);
 
-                if(!publicKey){
-                    return cb('User creation error');
-                }
+                // if(!publicKey){
+                //     return cb('User creation error');
+                // }
 
-                //TODO only for tests. Password set in terminal
-                if(config['ethereum']['rpc_enabled']){
-                    let resultAddress = ethRPC.personal.importRawKey(privateKey.slice(2), ethPassword);
+                // //TODO only for tests. Password set in terminal
+                // if(config['ethereum']['rpc_enabled']){
+                //     let resultAddress = ethRPC.personal.importRawKey(privateKey.slice(2), ethPassword);
+                //
+                //     if(!resultAddress || (resultAddress != address)){
+                //         return cb('Unlocking user wallet error');
+                //     }
+                // }
 
-                    if(!resultAddress || (resultAddress != address)){
-                        return cb('Unlocking user wallet error');
-                    }
-                }
-
-                Models.users.create({email, password : passwordString, privateKey : encryptedPrivateKey, publicKey, address}, (err, user) => {
+                Models.users.create({email, password : passwordString, privateKey : "", publicKey: address, address: address}, (err, user) => {
 	                if(err) return GlobalError('09:23', err, cb);
 	                
                     Controllers.users.users[user.address] = user._id;
@@ -83,7 +89,7 @@ class UsersController {
                     logger.info(`User ${email} created`);
                     Controllers.authority.login(cb, data);
                 });
-            });
+            // });
 
 
 		});

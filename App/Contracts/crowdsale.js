@@ -1,6 +1,6 @@
 let async = require('async'),
 	logger = require('log4js').getLogger('CrowdSale Contract'),
-	config = require(ConfigPath),
+	config = require('../../config/main.json'),
 	abe = require('./crowdsale.abe.json');
 
 let Contracts = getContracts();
@@ -9,7 +9,7 @@ let Models = getModels();
 class CrowdsaleContract {
 	
 	constructor() {
-		this.contract = ethRPC.eth.contract(abe).at(config['ethereum']['crowdSaleContractAddress']);
+		this.contract = ethRPC.eth.contract(abe).at(config.ethereum.crowdSaleContractAddress);
 		this.amountRaised = 0;
 		this.currentStage = '0';
 

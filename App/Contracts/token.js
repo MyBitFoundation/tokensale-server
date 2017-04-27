@@ -48,10 +48,10 @@ class TokenContract {
 		});
 		logger.info('Start watch');
 		filter.watch((error, result) => {
-			if(result['topics'][0] != '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')
+			if(result['topics'][0] !== '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef')
 				return;
 			let fromAddress = result['topics'][1].replace(/^0x000000000000000000000000/, '0x');
-			if(fromAddress == '0x0000000000000000000000000000000000000000')
+			if(fromAddress === '0x0000000000000000000000000000000000000000')
 				return;
 			let toAddress = result['topics'][2].replace(/^0x000000000000000000000000/, '0x');
 			
