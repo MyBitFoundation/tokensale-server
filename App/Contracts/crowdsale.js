@@ -1,6 +1,7 @@
 let async = require('async'),
 	logger = require('log4js').getLogger('CrowdSale Contract'),
 	config = require('../../config/main.json'),
+	moment = require('moment'),
 	abe = require('./crowdsale.abe.json');
 
 let Contracts = getContracts();
@@ -9,9 +10,11 @@ let Models = getModels();
 class CrowdsaleContract {
 	
 	constructor() {
+		this.address = config.ethereum.crowdSaleContractAddress;
 		this.contract = ethRPC.eth.contract(abe).at(config.ethereum.crowdSaleContractAddress);
 		this.amountRaised = 0;
 		this.currentStage = '0';
+		this.endDate = null;
 
 		if(!config['ethereum']['rpc_enabled'])
 			return;
@@ -27,6 +30,7 @@ class CrowdsaleContract {
 	bindAmountRaised() {
 		this.amountRaised = this.contract.amountRaised() / 1000000000000000000;
 		this.currentStage = this.contract.currentStage().toString();
+		this.endDate = moment(this.contract.deadline().toNumber(), 'X').format();
 	}
 	
 	startEventsWatcher(block) {

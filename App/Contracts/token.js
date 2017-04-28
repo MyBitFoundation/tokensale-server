@@ -29,7 +29,7 @@ class TokenContract {
 			Contracts = getContracts();
 			this.initIteration++;
 			
-			return setTimeout(this.initialize(), 1000);
+			return setTimeout(() => this.initialize(), 1000);
 		}
 		this.address = Contracts.crowdsale.tokenRewardAddress;
 		this.contract = ethRPC.eth.contract(abe).at(this.address);

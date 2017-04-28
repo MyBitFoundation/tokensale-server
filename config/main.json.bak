@@ -22,7 +22,7 @@
 		"rpc" : "http://localhost:9545",
 		"firstBlockForProcessing": 603629,
 		"rpc_enabled" : true,
-        "crowdSaleContractAddress": "0xc6Cc97A710F282dcb41C74F72C91BB0B8557637e"
+        "crowdSaleContractAddress": "0x3ec5e266970b7b3258756f5e8d9ea38690926e42"
 	},
 
 	"bravenewcoin-key" : "p4w2WYkkIlmshka5VW0TgDBfMmaUp1js5X5jsnZzQMcihtxv7a",

@@ -6,8 +6,8 @@ let passport = require('passport'),
 	async = require('async'),
 	moment = require('moment'),
 	logger = require('log4js').getLogger(),
-    twoFactor = require('node-2fa'),
-    ethHelper = require('../Components/eth');
+	twoFactor = require('node-2fa'),
+	ethHelper = require('../Components/eth');
 
 let Controllers = getControllers(),
 	Contracts = getContracts(),
@@ -35,7 +35,7 @@ let AuthorityController = {
 							if(user.disabled) {
 								return cb('User has been deactivated');
 							}
-
+							
 							cb(null, user);
 						});
 					},
@@ -60,8 +60,8 @@ let AuthorityController = {
 		});
 	},
 	login: (cb, data) => {
-		let  { req, res, _post } = data;
-
+		let {req, res, _post} = data;
+		
 		passport.authenticate('local', (err, user) => {
 			if(err) {
 				return cb(err);
@@ -69,19 +69,19 @@ let AuthorityController = {
 			if(!user) {
 				return cb('Invalid username or password');
 			}
-
-			if(user.tfa){
-				if(!_post.token){
-                    return cb('Two factor auth token required', 406);
+			
+			if(user.tfa) {
+				if(!_post.token) {
+					return cb('Two factor auth token required', 406);
 				}
-
-                let verification = twoFactor.verifyToken(user.secret, _post.token);
-
-                if(!verification || !verification.hasOwnProperty('delta') || verification.delta != 0){
-                    return cb('Two factor auth token is not correct', 406);
-                }
+				
+				let verification = twoFactor.verifyToken(user.secret, _post.token);
+				
+				if(!verification || !verification.hasOwnProperty('delta') || verification.delta != 0) {
+					return cb('Two factor auth token is not correct', 406);
+				}
 			}
-
+			
 			user.lastLoginDate = moment().format();
 			user.save(() => {
 				user = user.toObject();
@@ -101,9 +101,9 @@ let AuthorityController = {
 		cb();
 	},
 	info(cb, data) {
-		let { email, balance, tfa, lastLoginDate, publicKey } = data.req.session.passport.user,
+		let {email, balance, tfa, lastLoginDate, publicKey} = data.req.session.passport.user,
 			address = ethHelper.addressFromPublic(publicKey);
-
+		
 		if(!data.req.session.passport.user._id)
 			return cb('Unknown error');
 		Models.users.findOne({_id: data.req.session.passport.user._id}, (err, User) => {
@@ -111,27 +111,29 @@ let AuthorityController = {
 				logger.error(`Not found user ${data.user._id}`);
 				return cb(`Unknown error`);
 			}
-
+			
 			let tokenPrice = Controllers.crowdsale.getTokenPrice();
 			let amountRaised = Contracts.crowdsale.amountRaised || 0;
 			let amountRaisedEUR = (
-                tokenPrice &&
+				tokenPrice &&
 				amountRaised &&
 				Controllers.crowdsale.ratesData &&
 				Controllers.crowdsale.ratesData.fiat &&
-                Controllers.crowdsale.ratesData.fiat['EUR']
+				Controllers.crowdsale.ratesData.fiat['EUR']
 			) ? parseFloat(Controllers.crowdsale.ratesData.fiat['EUR'] / tokenPrice * amountRaised).toFixed(6) : 0;
-
+			
 			cb(null, {
 				email,
-				balance : parseFloat(User.balance),
-				address : address ? address.slice(2) : null,
+				balance: parseFloat(User.balance),
+				address: address ? address.slice(2) : null,
 				tfa,
 				lastLoginDate,
-				tokenPrice : (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
-				precision : Contracts.token.precision,
-                amountRaised,
-                amountRaisedEUR
+				tokenPrice: (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
+				precision: Contracts.token.precision,
+				endTime: Contracts.crowdsale.endDate,
+				contractAddress: Contracts.crowdsale.address,
+				amountRaised,
+				amountRaisedEUR
 			});
 		});
 	}
