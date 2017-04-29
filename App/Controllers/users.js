@@ -109,7 +109,7 @@ class UsersController {
         }
 
         let { email, password } = req.user;
-        let props = _post.address;
+        let address = _post.address;
 		
 		if(address && !/^(0x)?[0-9a-f]{40}$/i.test(address)) {
 			return callback('Invalid address');
