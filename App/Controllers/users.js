@@ -108,7 +108,8 @@ class UsersController {
             return callback('New password does not match retyped password');
         }
 
-        let { email, password, address } = req.user;
+        let { email, password } = req.user;
+        let props = _post.address;
 		
 		if(address && !/^(0x)?[0-9a-f]{40}$/i.test(address)) {
 			return callback('Invalid address');
