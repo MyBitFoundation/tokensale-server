@@ -125,7 +125,8 @@ let AuthorityController = {
 			cb(null, {
 				email,
 				balance: parseFloat(User.balance),
-				address: address ? address.slice(2) : null,
+				csAddress: address ? address.slice(2) : null,
+				address: User.address,
 				tfa,
 				lastLoginDate,
 				tokenPrice: (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
