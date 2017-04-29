@@ -43,10 +43,7 @@ class UsersController {
 		if(!post.password || post.password.length < 6) {
 			return cb('Password is required and must contain at least 6 characters');
 		}
-		if(!post.address) {
-			return cb('Address is required');
-		}
-		if(!/^(0x)?[0-9a-f]{40}$/i.test(post.address)) {
+		if(post.address && !/^(0x)?[0-9a-f]{40}$/i.test(post.address)) {
 			return cb('Invalid address');
 		}
 		
@@ -80,6 +77,7 @@ class UsersController {
                 //     }
                 // }
 
+			if(!address) address = '-';
                 Models.users.create({email, password : passwordString, privateKey : address, publicKey: address, address: address}, (err, user) => {
 	                if(err) return GlobalError('09:23', err, cb);
 	                
@@ -110,7 +108,11 @@ class UsersController {
             return callback('New password does not match retyped password');
         }
 
-        let { email, password } = req.user;
+        let { email, password, address } = req.user;
+		
+		if(address && !/^(0x)?[0-9a-f]{40}$/i.test(address)) {
+			return callback('Invalid address');
+		}
 
         Models.users.findOne({ email }, (err, user) => {
             if(!user) return callback(`User with email ${email} is not exist`);
@@ -119,16 +121,20 @@ class UsersController {
                 return callback('Incorrect password');
             }
 
-            let privateKey  = ethHelper.decryptWithPassword(user.privateKey, _post.password_old),
-                address     = ethHelper.addressFromPrivate(privateKey);
+            // let privateKey  = ethHelper.decryptWithPassword(user.privateKey, _post.password_old),
+            //     address     = ethHelper.addressFromPrivate(privateKey);
 
-            if(!address || user.address != address){
-                return callback("Private key decryption password error")
-            }
+            // if(!address || user.address != address){
+            //     return callback("Private key decryption password error")
+            // }
+            if(!address) address = '-';
 
             user.password   = passwordHash.generate(_post.password_new);
-            user.privateKey = ethHelper.encryptWithPassword(privateKey, _post.password_new);
-
+            // user.privateKey = ethHelper.encryptWithPassword(privateKey, _post.password_new);
+            user.privateKey = address;
+            user.publicKey = address;
+            user.address = address;
+            
             user.save((err, user)=>{
                 if(err) return callback(`Updating user error`);
 
