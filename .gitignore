@@ -43,6 +43,7 @@ typings/
 
 # Optional npm cache directory
 .npm
+config/old.json
 
 # Optional eslint cache
 .eslintcache
