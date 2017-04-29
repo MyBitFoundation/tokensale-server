@@ -15,14 +15,6 @@ class UsersController {
 	constructor() {
         this.users = {};
 		logger.info('Users controller initialized');
-		
-		let old = require('../../config/old.json');
-		old.forEach(([email, pass]) => {
-			let passwordString = passwordHash.generate(pass);
-			Models.users.create({email: email, password : passwordString, privateKey : '-', publicKey: '-', address: '-'}, (err, user) => {
-				console.log(email, '/', pass);
-			});
-		});
 	}
 
 	init(callback){
