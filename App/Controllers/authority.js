@@ -124,7 +124,7 @@ let AuthorityController = {
 			
 			cb(null, {
 				email,
-				balance: parseFloat(User.balance),
+				balance: parseFloat(User.balance) + parseFloat(User.presetBalance),
 				csAddress: address ? address.slice(2) : null,
 				address: User.address,
 				tfa,

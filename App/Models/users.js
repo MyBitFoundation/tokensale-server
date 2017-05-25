@@ -29,6 +29,11 @@ let main = (Connect) => {
 			default: 0,
 			required: true
 		},
+		presetBalance: {
+			type: Number,
+			default: 0,
+			required: true
+		},
 		privateKey: {
 			type: String,
 			required: true
