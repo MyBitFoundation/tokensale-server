@@ -123,18 +123,20 @@ let AuthorityController = {
 			) ? parseFloat(Controllers.crowdsale.ratesData.fiat['EUR'] / tokenPrice * amountRaised).toFixed(6) : 0;
 			
 			cb(null, {
-				email,
+				email: email,
 				balance: parseFloat(User.balance) + parseFloat(User.presetBalance),
 				csAddress: address ? address.slice(2) : null,
 				address: User.address,
-				tfa,
-				lastLoginDate,
+				tfa: tfa,
+				lastLoginDate: lastLoginDate,
 				tokenPrice: (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
 				precision: Contracts.token.precision,
 				endTime: Contracts.crowdsale.endDate,
+				deadline: Contracts.crowdsale.deadline,
+				presaleDeadline: Contracts.crowdsale.presaleDeadline,
 				contractAddress: Contracts.crowdsale.address,
-				amountRaised,
-				amountRaisedEUR
+				amountRaised: amountRaised,
+				amountRaisedEUR: amountRaisedEUR
 			});
 		});
 	}

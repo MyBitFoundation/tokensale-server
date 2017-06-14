@@ -8,7 +8,7 @@ let request = require('request'),
 	moment = require('moment'),
 	fx = require("money"),
 	ethHelper = require('../Components/eth'),
-    changelly = require('../Components/changelly');
+	changelly = require('../Components/changelly');
 
 fx.base = "USD";
 
@@ -26,98 +26,86 @@ class CrowdsaleController {
 		logger.info('Crowdsale controller initialized');
 	}
 	
-	getTokenPrice(amountEth) {
-		let stage = Contracts.crowdsale.currentStage;
-		amountEth = amountEth ? parseFloat(amountEth) : 0;
-
-        switch (true){
-            case (stage == '0'):
-                return 0.0075;
-            case stage == '1':
-                return 0.0085;
-            case stage == '2':
-                return 0.009;
-            case stage == '3':
-                return 0.01;
-        }
+	getTokenPrice() {
+		return Contracts.crowdsale.currentPrice;
 	}
-
+	
 	deposit(callback, data) {
 		let {currency} = data._post,
-			{_id : userId, address} = data.user;
-
+			{_id: userId, address} = data.user;
+		
 		if(!currency) {
 			return callback('Currency is required');
 		}
-
-        currency = currency.toUpperCase();
-
-		if(config['currencies']['crypto'].indexOf(currency) == -1){
-            return callback(`Currency ${currency} is not allowed`);
+		
+		currency = currency.toUpperCase();
+		
+		if(config['currencies']['crypto'].indexOf(currency) == -1) {
+			return callback(`Currency ${currency} is not allowed`);
 		}
-
+		
 		if(currency == 'ETH') {
 			return callback(null, {
-                address: address,
-                type: 'ETH',
-				min : 0
-            });
+				address: address,
+				type: 'ETH',
+				min: 0
+			});
 		}
-
+		
 		async.parallel({
-			wallet : (cb)=>{
+			wallet: (cb) => {
 				async.waterfall([
-                    (cb) => {
-                        Models.depositWallets.findOne({
-                            userId: userId,
-                            depositType: currency
-                        }, (err, wallet) => {
-                            cb(null, wallet);
-                        });
-                    },
-                    (wallet, cb) => {
-                        if(wallet) {
-                            cb(null, wallet);
-                        } else {
-                            CrowdsaleController.createTransactionWallet(currency.toLowerCase(), userId, address, cb);
-                        }
-                    }
+					(cb) => {
+						Models.depositWallets.findOne({
+							userId: userId,
+							depositType: currency
+						}, (err, wallet) => {
+							cb(null, wallet);
+						});
+					},
+					(wallet, cb) => {
+						if(wallet) {
+							cb(null, wallet);
+						} else {
+							CrowdsaleController.createTransactionWallet(currency.toLowerCase(), userId, address, cb);
+						}
+					}
 				], cb)
 			},
-			min : (cb)=>{
-                changelly.getMinAmount(currency.toLowerCase(), 'eth', function(error, data) {
-                    if(error)
-                        return cb('Changelly get min amount error: ' + error);
-
-                    if(data.error)
-                        return cb('Changelly get min amount error: ' + data.error.message);
-
-                    return cb(null, data.result);
-                });
+			min: (cb) => {
+				changelly.getMinAmount(currency.toLowerCase(), 'eth', function(error, data) {
+					if(error)
+						return cb('Changelly get min amount error: ' + error);
+					
+					if(data.error)
+						return cb('Changelly get min amount error: ' + data.error.message);
+					
+					return cb(null, data.result);
+				});
 			}
 		}, (err, result) => {
 			let {wallet, min} = result;
 			if(err) return GlobalError('20012012', err, callback);
-
+			
 			let response = {
 				address: wallet.deposit,
 				type: wallet.depositType.toUpperCase(),
-                min
+				min
 			};
-
+			
 			switch(response.type) {
-                // case 'BTS':
-					// return callback(null, Object.assign(response, {
-					// 	address: wallet.extraInfo,
-					// 	memo: wallet.deposit
-					// }));
-					// break;
-                // case 'XRP':
-                //     return callback(null, Object.assign(response, {
-                //         address: wallet.deposit,
-                //         destTag: wallet.extraInfo
-                //     }));
-                //     break;
+				// case 'BTS':
+				// return callback(null, Object.assign(response, {
+				// 	address: wallet.extraInfo,
+				// 	memo: wallet.deposit
+				// }));
+				// break;
+				// case 'XRP':
+				//     return callback(null, Object.assign(response, {
+				//         address: wallet.deposit,
+				//         destTag: wallet.extraInfo
+				//     }));
+				//     break;
 				default:
 					return callback(null, response);
 			}
@@ -184,64 +172,64 @@ class CrowdsaleController {
 	rates(callback, data) {
 		callback(null, Controllers.crowdsale.ratesData);
 	}
-
-	exchangeAmount(callback, data){
+	
+	exchangeAmount(callback, data) {
 		let {currency, amount} = data._get;
-
-        if(!currency) {
-            return callback('Currency is required');
-        }
-
-        if(!amount) {
-            return callback('Amount is required');
-        }
-
-        async.parallel({
-        	min : (cb)=>{
-                changelly.getMinAmount(currency, 'eth', function(error, data) {
-                    if(error)
-                        return cb('Changelly get min amount error: ' + error);
-
-                    if(data.error)
-                        return cb('Changelly get min amount error: ' + data.error.message);
-
-                    return cb(null, data.result);
-                });
+		
+		if(!currency) {
+			return callback('Currency is required');
+		}
+		
+		if(!amount) {
+			return callback('Amount is required');
+		}
+		
+		async.parallel({
+			min: (cb) => {
+				changelly.getMinAmount(currency, 'eth', function(error, data) {
+					if(error)
+						return cb('Changelly get min amount error: ' + error);
+					
+					if(data.error)
+						return cb('Changelly get min amount error: ' + data.error.message);
+					
+					return cb(null, data.result);
+				});
 			},
-			amount : (cb)=>{
-                changelly.getExchangeAmount(currency, 'eth', amount, function(error, data) {
-                    if(error)
-                        return cb('Changelly get exchange amount error: ' + error);
-
-                    if(data.error)
-                        return cb('Changelly get exchange amount error: ' + data.error.message);
-
-                    return cb(null, data.result * Controllers.crowdsale.getTokenPrice());
-                });
+			amount: (cb) => {
+				changelly.getExchangeAmount(currency, 'eth', amount, function(error, data) {
+					if(error)
+						return cb('Changelly get exchange amount error: ' + error);
+					
+					if(data.error)
+						return cb('Changelly get exchange amount error: ' + data.error.message);
+					
+					return cb(null, data.result * Controllers.crowdsale.getTokenPrice());
+				});
 			}
-		}, (error, result)=>{
-            if(error) callback(error);
-
-            callback(null, result);
+		}, (error, result) => {
+			if(error) callback(error);
+			
+			callback(null, result);
 		});
 	}
 	
 	static createTransactionWallet(currency, userId, userAddress, callback) {
 		async.waterfall([
 			(cb) => {
-                CrowdsaleController.requestChangelly(currency, userAddress, cb)
+				CrowdsaleController.requestChangelly(currency, userAddress, cb)
 			},
 			(response, cb) => {
 				let newWallet = {
-					userId		: userId,
-					orderId		: response.orderId,
-					deposit		: response.deposit,
-					depositType	: response.coin.toUpperCase(),
-					extraInfo	: response.extraInfo,
-					executed	: false,
-					executedAt	: null
+					userId: userId,
+					orderId: response.orderId,
+					deposit: response.deposit,
+					depositType: response.coin.toUpperCase(),
+					extraInfo: response.extraInfo,
+					executed: false,
+					executedAt: null
 				};
-
+				
 				Models.depositWallets.create(newWallet, err => {
 					console.log(err);
 					if(err) return cb('Insert deposit wallet error');
@@ -252,52 +240,52 @@ class CrowdsaleController {
 		], callback);
 		
 	}
-
-	static requestShapeShift(currency, userAddress, cb){
+	
+	static requestShapeShift(currency, userAddress, cb) {
 		let coin = currency.toLowerCase();
-
-        request({
-            method: 'POST',
-            uri: 'https://shapeshift.io/shift',
-            json: {
-                withdrawal: userAddress || config['ethereum']['public_key'],
-                pair: `${coin}_eth`,
-                // returnAddress:"BBBBBBBBBBB",//TODO return address may be required (!!!important!!!)
-                apiKey: config['shapeshift']['public_key']
-            }
-        }, (error, response, body) => {
-            if(error || response.statusCode != 200)
-                return cb('Create transaction wallet error: ' + error);
-
-            if(body.error)
-                return cb('Api error' + body.error);
-
-            cb(null, {
-                coin,
-                orderId : body.orderId,
-                deposit : body.deposit,
-                extraInfo : (coin == 'xmr' || coin == 'bts') ? body.sAddress : null,
-            });
-        });
+		
+		request({
+			method: 'POST',
+			uri: 'https://shapeshift.io/shift',
+			json: {
+				withdrawal: userAddress || config['ethereum']['public_key'],
+				pair: `${coin}_eth`,
+				// returnAddress:"BBBBBBBBBBB",//TODO return address may be required (!!!important!!!)
+				apiKey: config['shapeshift']['public_key']
+			}
+		}, (error, response, body) => {
+			if(error || response.statusCode != 200)
+				return cb('Create transaction wallet error: ' + error);
+			
+			if(body.error)
+				return cb('Api error' + body.error);
+			
+			cb(null, {
+				coin,
+				orderId: body.orderId,
+				deposit: body.deposit,
+				extraInfo: (coin == 'xmr' || coin == 'bts') ? body.sAddress : null,
+			});
+		});
 	}
-
-	static requestChangelly(currency, userAddress, cb){
-        let coin = currency.toLowerCase();
-
-        changelly.generateAddress(coin, 'eth', userAddress, undefined, (error, data) => {
-        	if(error)
-        		return cb('Create transaction wallet error: ' + error);
-
-        	if(data.error)
-        		return cb('Create transaction wallet error: ' + data.error.message);
-
-            cb(null, {
-                coin,
-                orderId : data.id,
-                deposit : data.result.address,
-                extraInfo : data.result.extraId ? data.result.extraId : null,
-            })
-        });
+	
+	static requestChangelly(currency, userAddress, cb) {
+		let coin = currency.toLowerCase();
+		
+		changelly.generateAddress(coin, 'eth', userAddress, undefined, (error, data) => {
+			if(error)
+				return cb('Create transaction wallet error: ' + error);
+			
+			if(data.error)
+				return cb('Create transaction wallet error: ' + data.error.message);
+			
+			cb(null, {
+				coin,
+				orderId: data.id,
+				deposit: data.result.address,
+				extraInfo: data.result.extraId ? data.result.extraId : null,
+			})
+		});
 	}
 }
 

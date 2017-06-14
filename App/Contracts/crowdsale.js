@@ -14,23 +14,29 @@ class CrowdsaleContract {
 		this.contract = ethRPC.eth.contract(abe).at(config.ethereum.crowdSaleContractAddress);
 		this.amountRaised = 0;
 		this.currentStage = '0';
+		this.currentPrice = '0';
+		this.presaleDeadline = '0';
 		this.endDate = null;
+		this.deadline = null;
 
 		if(!config['ethereum']['rpc_enabled'])
 			return;
 
 		this.tokenRewardAddress = this.contract.tokenReward();
-		this.bindAmountRaised();
+		this.bindData();
 
 		Models.settings.get('last_block_with_crowdsale_log', (err, block) => {
 			this.startEventsWatcher(parseInt((block || config['ethereum']['firstBlockForProcessing'])) + 1);
 		});
 	}
 	
-	bindAmountRaised() {
-		this.amountRaised = this.contract.amountRaised() / 1000000000000000000;
+	bindData() {
+		this.amountRaised = ethRPC.fromWei(this.contract.totalCollected());
 		this.currentStage = this.contract.currentStage().toString();
 		this.endDate = moment(this.contract.deadline().toNumber(), 'X').format();
+		this.currentPrice = ethRPC.fromWei(parseInt(this.contract.prices(this.currentStage)) * Math.pow(10, 8));
+		this.presaleDeadline = this.contract.presaleDeadline();
+		this.deadline = this.contract.deadline();
 	}
 	
 	startEventsWatcher(block) {
@@ -41,7 +47,7 @@ class CrowdsaleContract {
 		});
 		logger.info('Start watch');
 		filter.watch((error, result) => {
-			this.bindAmountRaised();
+			this.bindData();
 			let address = `0x${result.data.substring(26, 66)}`;
 			logger.info(`New payment from ${address}`);
 			Models.settings.set('last_block_with_crowdsale_log', result.blockNumber);

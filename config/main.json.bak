@@ -32,5 +32,9 @@
 		"ApiSecret" : "3f00da1d76af743bc078a539db1250fbc844221836c5da66a67752886cd44b35"
 	},
 
-	"deadline" : "2017-02-27 00:00:00"
+	"deadline" : "2017-02-27 00:00:00",
+    "mailchimp": {
+        "api-key": "",
+        "id_subscriptions": ""
+    }
 }
