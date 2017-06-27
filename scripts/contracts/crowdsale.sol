@@ -1,101 +1,198 @@
 pragma solidity ^0.4.2;
-contract token {
-   uint8 public decimals;
-   uint256 public totalSupply;
-   function mintToken(address receiver, uint amount){  }
+contract owned {
+	address public owner;
+	function owned() {
+		owner = msg.sender;
+	}
+	function changeOwner(address newOwner) onlyowner {
+		owner = newOwner;
+	}
+	modifier onlyowner() {
+		if (msg.sender==owner) _;
+	}
 }
-contract Crowdsale {
-   address public beneficiary;
-   address public founders;
-   uint public fundingGoal;
-   uint public amountRaised;
-   // 14.04.2017 23:59:59
-   uint public deadline = 1492214399;
-   uint public tokenPrice;
-   uint price;
-   token public tokenReward;
-   mapping(address => uint256) public balanceOf;
-   bool fundingGoalReached = false;
-   event GoalReached(address beneficiary, uint amountRaised);
-   event FundTransfer(address backer, uint amount, bool isContribution);
-   bool crowdsaleClosed = false;
-   uint tokenMultiplier = 10;
+contract tokenRecipient { function receiveApproval(address _from, uint256 _value, address _token, bytes _extraData); }
+contract CSToken is owned {
+	/* Public variables of the token */
+	string public standard = 'Token 0.1';
+	string public name;
+	string public symbol;
+	uint8 public decimals;
+	uint256 public totalSupply;
+	/* This creates an array with all balances */
+	mapping (address => uint256) public balanceOf;
+	mapping (address => mapping (address => uint256)) public allowance;
+	/* This generates a public event on the blockchain that will notify clients */
+	event Transfer(address indexed from, address indexed to, uint256 value);
+	/* Initializes contract with initial supply tokens to the creator of the contract */
+	function CSToken(
+	uint256 initialSupply,
+	string tokenName,
+	uint8 decimalUnits,
+	string tokenSymbol
+	) {
+		owner = msg.sender;
+		balanceOf[msg.sender] = initialSupply;              // Give the creator all initial tokens
+		totalSupply = initialSupply;                        // Update total supply
+		name = tokenName;                                   // Set the name for display purposes
+		symbol = tokenSymbol;                               // Set the symbol for display purposes
+		decimals = decimalUnits;                            // Amount of decimals for display purposes
+	}
+	/* Send coins */
+	function transfer(address _to, uint256 _value) {
+		if (balanceOf[msg.sender] < _value) throw;           // Check if the sender has enough
+		if (balanceOf[_to] + _value < balanceOf[_to]) throw; // Check for overflows
+		balanceOf[msg.sender] -= _value;                     // Subtract from the sender
+		balanceOf[_to] += _value;                            // Add the same to the recipient
+		Transfer(msg.sender, _to, _value);                   // Notify anyone listening that this transfer took place
+	}
+	function mintToken(address target, uint256 mintedAmount) onlyowner {
+		balanceOf[target] += mintedAmount;
+		totalSupply += mintedAmount;
+		Transfer(0, owner, mintedAmount);
+		Transfer(owner, target, mintedAmount);
+	}
+	/* Allow another contract to spend some tokens in your behalf */
+	function approve(address _spender, uint256 _value)
+	returns (bool success) {
+		allowance[msg.sender][_spender] = _value;
+		return true;
+	}
+	/* Approve and then comunicate the approved contract in a single tx */
+	function approveAndCall(address _spender, uint256 _value, bytes _extraData)
+	returns (bool success) {
+		tokenRecipient spender = tokenRecipient(_spender);
+		if (approve(_spender, _value)) {
+			spender.receiveApproval(msg.sender, _value, this, _extraData);
+			return true;
+		}
+	}
+	/* A contract attempts to get the coins */
+	function transferFrom(address _from, address _to, uint256 _value) returns (bool success) {
+		if (balanceOf[_from] < _value) throw;                 // Check if the sender has enough
+		if (balanceOf[_to] + _value < balanceOf[_to]) throw;  // Check for overflows
+		if (_value > allowance[_from][msg.sender]) throw;   // Check allowance
+		balanceOf[_from] -= _value;                          // Subtract from the sender
+		balanceOf[_to] += _value;                            // Add the same to the recipient
+		allowance[_from][msg.sender] -= _value;
+		Transfer(_from, _to, _value);
+		return true;
+	}
+	/* This unnamed function is called whenever someone tries to send ether to it */
+	function () {
+		throw;     // Prevents accidental sending of ether
+	}
+}
+contract Crowdsale is owned{
+        uint public start = 1498651200;
+        uint public currentStage = 0;
+        bool public crowdsaleStarted = false;
+        uint public currentStageStart;
+        uint[] public prices;
+        uint[] public tresholds;
+        address public bounties;
+        uint public totalCollected;
+        uint public deadline;
+        uint public presaleDeadline;
+        uint public tokensRaised;
 
-   // 2000 ETH
-   uint firstTierAmount = 2000 ether;
-   // 8000 ETH
-   uint secondTierAmount = 8000 ether;
-   /* data structure to hold information about campaign contributors */
-   /*  at initialization, setup the owner */
-   function Crowdsale(
-       address ifSuccessfulSendTo,
-       address foundersAddress,
-       uint fundingGoalInEthers,
-       token addressOfTokenUsedAsReward
-   ) {
-       beneficiary = ifSuccessfulSendTo;
-       founders = foundersAddress;
-       fundingGoal = fundingGoalInEthers * 1 ether;
-       tokenReward = token(addressOfTokenUsedAsReward);
-       tokenMultiplier = tokenMultiplier**tokenReward.decimals();
-   }
-   /* The function without name is the default function that is called whenever anyone sends funds to a contract */
-   function () payable {
-       if (crowdsaleClosed) throw;
-       if (amountRaised <= firstTierAmount) {
-           tokenPrice = 4 finney;
-       } else {
-           if (amountRaised <= secondTierAmount) {
-               tokenPrice = 6 finney;
-           } else {
-               tokenPrice = 10 finney;
-           }
-       }
-       price = tokenPrice / tokenMultiplier;
-       uint costPercent;
-       uint amount = msg.value;
-       balanceOf[msg.sender] = amount;
-       amountRaised += amount;
-       tokenReward.mintToken(msg.sender, amount / price);
-       tokenReward.mintToken(beneficiary, amount / price * 29 / 100);
-       tokenReward.mintToken(founders, amount / price * 14 / 100);
-       FundTransfer(msg.sender, amount, true);
-       if((amount % price) > 0)
-       {
-           amountRaised -= amount % price;
-           if (msg.sender.send(amount % price)){
-               FundTransfer(msg.sender, amount % price, false);
-           }
-       }
-   }
-   modifier afterDeadline() { if (now >= deadline) _; }
-   /* checks if the goal or time limit has been reached and ends the campaign */
-   function checkGoalReached() afterDeadline {
-       if (amountRaised >= fundingGoal){
-           fundingGoalReached = true;
-           GoalReached(beneficiary, amountRaised);
-       }
-       crowdsaleClosed = true;
-   }
-   function safeWithdrawal() afterDeadline {
-       if (!fundingGoalReached) {
-           uint amount = balanceOf[msg.sender];
-           balanceOf[msg.sender] = 0;
-           if (amount > 0) {
-               if (msg.sender.send(amount)) {
-                   FundTransfer(msg.sender, amount, false);
-               } else {
-                   balanceOf[msg.sender] = amount;
-               }
-           }
-       }
-       if (fundingGoalReached && beneficiary == msg.sender) {
-           if (beneficiary.send(amountRaised)) {
-               FundTransfer(beneficiary, amountRaised, false);
-           } else {
-               //If we fail to send the funds to beneficiary, unlock funders balance
-               fundingGoalReached = false;
-           }
-       }
-   }
+        uint constant presaleDuration = 19 days;
+        uint constant saleDuration = 29 days;
+        uint tokenMultiplier = 10;
+
+
+        CSToken public tokenReward;
+        mapping(address => uint256) public balanceOf;
+        mapping(address => address) public presaleContracts;
+        mapping(address => uint256) public presaleBalance;
+        event GoalReached(address beneficiary, uint totalCollected);
+        event FundTransfer(address backer, uint amount, bool isContribution);
+        event NewStage (uint time, uint stage);
+
+
+        modifier afterDeadline() { if (now < deadline) throw; _; }
+        modifier beforeDeadline() { if (now >= deadline) throw; _; }
+        modifier onPresale() { if (now >= presaleDeadline) throw; _; }
+        modifier afterPresale() { if (now < presaleDeadline) throw; _; }
+
+	function Crowdsale(
+	address _bounties,
+	uint premine 	    //Note that premine shouldn't ignore precision (1 will equal to 0.00000001)
+	) {
+		tokenReward = new CSToken(0, 'MyBit Token', 8, 'MyB');
+		tokenMultiplier = tokenMultiplier**tokenReward.decimals();
+		tokenReward.mintToken(_bounties, premine);
+		presaleDeadline = start + presaleDuration;
+		deadline = start + presaleDuration + saleDuration;
+		tresholds.push(1250000 * tokenMultiplier);
+		tresholds.push(3000000 * tokenMultiplier);
+		tresholds.push(2**256 - 1);
+		prices.push(7500 szabo / tokenMultiplier);
+		prices.push(10 finney / tokenMultiplier);
+		prices.push(2**256 - 1);
+
+
+		bounties = _bounties;
+
+	}
+
+
+        function mint(uint amount, uint tokens, address sender) internal {
+            balanceOf[sender] += amount;
+            tokensRaised += tokens;
+            totalCollected += amount;
+            tokenReward.mintToken(sender, tokens);
+            tokenReward.mintToken(owner, tokens * 1333333 / 10000000);
+            tokenReward.mintToken(bounties, tokens * 1666667 / 10000000);
+            FundTransfer(sender, amount, true);
+        }
+
+	function processPayment(address from, uint amount) internal beforeDeadline
+	{
+		FundTransfer(from, amount, false);
+		uint price = prices[currentStage];
+		uint256 tokenAmount = amount / price;
+		if (tokensRaised + tokenAmount > tresholds[currentStage])
+		{
+			uint256 currentTokens = tresholds[currentStage] - tokensRaised;
+			uint256 currentAmount = currentTokens * price;
+			mint(currentAmount, currentTokens, from);
+			currentStage++;
+			NewStage(now, currentStage);
+			processPayment(from, amount - currentAmount);
+			return;
+		}
+	        mint(amount, tokenAmount, from);
+		uint256 change = amount - tokenAmount * price;
+		if(change > 0)
+		{
+			totalCollected -= change;
+			balanceOf[from] -= change;
+			if (!from.send(change)){
+				throw;
+			}
+		}
+	}
+	function () payable beforeDeadline {
+		if(now < start) throw;
+		if(currentStage > 1) throw;
+		if (crowdsaleStarted){
+			processPayment(msg.sender, msg.value);
+		} else {
+			if (now > presaleDeadline)
+			{
+				crowdsaleStarted = true;
+			} else {
+				if (msg.value < 1 ether) throw;
+			}
+			processPayment(msg.sender, msg.value);
+        }
+    }
+    function safeWithdrawal() afterDeadline {
+        if (bounties == msg.sender) {
+            if (!bounties.send(totalCollected)) {
+                throw;
+            }
+        }
+    }
 }

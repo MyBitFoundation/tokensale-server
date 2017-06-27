@@ -265,7 +265,7 @@ class Processor {
 					ethRPC.personal.unlockAccount(user.address, ethPassword);
 				} catch(error) {
 					if(error) {
-						logger.error('[processTransaction][unlock account] : ', error);
+						logger.error(`[processTransaction][unlock account] ${user.address} : `, error);
 						return cb(error);
 					}
 				}
