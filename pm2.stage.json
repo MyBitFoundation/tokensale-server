@@ -1,0 +1,11 @@
+{
+	"apps": [{
+		"name": "stage-server",
+		"script": "server.js",
+		"max_memory_restart": "2000M",
+		"env": {
+			"NODE_ENV": "stage",
+			"NODE_APP_INSTANCE": "stage"
+		}
+	}]
+}
