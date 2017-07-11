@@ -1,6 +1,6 @@
 let async = require('async'),
 	logger = require('log4js').getLogger('CrowdSale Contract'),
-	config = require(ConfigPath),
+	config = require('config'),
 	abe = require('./crowdsale.abe.json');
 
 class CrowdsaleContract {

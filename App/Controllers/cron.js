@@ -4,7 +4,7 @@
 let request = require('request'),
 	async = require('async'),
 	logger = require('log4js').getLogger('Crowdsale Controller'),
-	config = require('../../config/main.json'),
+	config = require('config'),
 	cron = require('node-cron'),
 	fx = require("money"),
 	BigNumber = require('bignumber.js'),
@@ -23,7 +23,7 @@ class CronController {
 	
 	init() {
 		this.handleDeposits();
-		if(config.changelly.disabled) return;
+		if(!config.currencies.enable) return;
 		CronController.handleRates();
 		cron.schedule('0 0 * * *', () => {
 			CronController.handleRates();

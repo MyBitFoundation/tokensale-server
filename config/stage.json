@@ -1,0 +1,17 @@
+{
+	"db": {
+		"database": "608_mybit_stage"
+	},
+	"disableRaven": true,
+	"app_api_host": "60801",
+	"ethereum": {
+		"public_key": "0xaf9ef553c2b2e38ba1638f6069b7ae8c0859c71b",
+		"rpc": "http://s.pixelplex.by:6082",
+		"firstBlockForProcessing": 503629,
+		"rpc_enabled": true,
+		"crowdSaleContractAddress": "0x405d2fCA9a26F912E784088886cA57E84E2B1016"
+	},
+	"currencies": {
+		"enable": false
+	}
+}

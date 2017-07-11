@@ -3,7 +3,7 @@
  */
 'use strict';
 
-let config = require(ConfigPath);
+let config = require('config');
 let ChangellyClass = (function() {
     let URL = 'https://api.changelly.com';
     let io = require('socket.io-client');

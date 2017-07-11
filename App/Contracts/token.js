@@ -3,7 +3,7 @@
 let abe = require('./token.abe.json');
 
 let logger = require('log4js').getLogger('Token Contract'),
-	config = require(ConfigPath);
+	config = require('config');
 
 let Contracts = getContracts();
 let Models = getModels();

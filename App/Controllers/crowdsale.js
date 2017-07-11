@@ -4,7 +4,7 @@
 let request = require('request'),
 	async = require('async'),
 	logger = require('log4js').getLogger('Crowdsale Controller'),
-	config = require(ConfigPath),
+	config = require('config'),
 	moment = require('moment'),
 	fx = require("money"),
 	ethHelper = require('../Components/eth'),

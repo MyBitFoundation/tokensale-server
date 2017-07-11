@@ -2,13 +2,14 @@
   "name": "mybit_server",
   "version": "0.0.1",
   "scripts": {
-    "start": "PASSWORD=12345 node server.js",
+    "start": "NODE_ENV=stage node server.js",
     "watcher": "node watchers/blockchain.js"
   },
   "dependencies": {
     "async": "^2.1.5",
     "bignumber.js": "^4.0.0",
     "body-parser": "^1.16.1",
+    "config": "^1.26.1",
     "connect-mongo": "^1.3.2",
     "cors": "^2.8.1",
     "crypto": "0.0.3",

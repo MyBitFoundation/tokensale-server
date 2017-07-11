@@ -3,7 +3,7 @@
 let mongoose = require("mongoose"),
 	dir = require('node-dir'),
 	async = require("async"),
-	config = require(ConfigPath)['db'];
+	config = require('config')['db'];
 
 // let cacheOpts = {
 // 	max: 100,

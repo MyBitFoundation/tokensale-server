@@ -2,13 +2,12 @@
  * Created by shumer on 3/10/17.
  */
 global.RootDir = `${__dirname}/../`;
-global.ConfigPath = `${RootDir}config/main.json`;
 
 const async = require('async');
 const Web3 = require('web3');
 const abe = require('../App/Contracts/crowdsale.abe.json');
 const logger = require('log4js').getLogger('Watcher blockchain');
-const config = require(global.ConfigPath);
+const config = require('config');
 const fs = require('fs');
 const ethHelper = require(`${RootDir}App/Components/eth`);
 const Raven = require('raven');

@@ -8,13 +8,7 @@ let async = require('async'),
 	moment = require('moment'),
 	Web3 = require('web3');
 
-global.ConfigPath = __dirname + '/config/main.json';
-
-if(!fs.existsSync(ConfigPath)) {
-	logger.error("Config file not found. Please create main.json file in config folder");
-	process.exit(1);
-}
-let config = require(global.ConfigPath);
+let config = require('config');
 
 if(!fs.existsSync(__dirname + '/password')) {
 	logger.error("File with password not found. Please create password file in root folder");
