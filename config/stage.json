@@ -11,6 +11,9 @@
 		"rpc_enabled": true,
 		"crowdSaleContractAddress": "0x405d2fCA9a26F912E784088886cA57E84E2B1016"
 	},
+	"raven": {
+		"enabled": true
+	},
 	"currencies": {
 		"enable": false
 	}

@@ -1,76 +1,66 @@
 "use strict";
 
-let logger = require('log4js').getLogger('Users Model'),
-	moment = require('moment');
+const moment = require('moment'),
+	shortid = require('shortid'),
+	mongoose = require('mongoose');
 
-let main = (Connect) => {
-	let Schema = new Connect.Schema({
-		email: {
-			type: String,
-			required: true,
-			index: {unique: true}
-		},
-		password: {
-			type: String,
-			required: true
-		},
-		tfa: {
-			type: Boolean,
-			required: false,
-			default: false
-		},
-		secret: {
-			type: String,
-			required: false,
-			default: null
-		},
-		balance: {
-			type: Number,
-			default: 0,
-			required: true
-		},
-		presetBalance: {
-			type: Number,
-			default: 0,
-			required: true
-		},
-		privateKey: {
-			type: String,
-			required: true
-		},
-		publicKey: {
-			type: String,
-			required: true
-		},
-		address: {
-			type: String,
-			required: true
-		},
-		preSaleAddress: {
-			type: String
-		},
-		disabled: {
-			type: Boolean,
-			default: false
-		},
-		lastLoginDate: {
-			type: Date,
-			default: null
-		},
-		role: {
-			type: String,
-			enum: ['user', 'admin'],
-			default: "user"
-		}
-	}, {
-		timestamps: true
-	});
-	let model = Connect.model('users', Schema);
-	
-	// only for tips in IDE
-	let Models = {
-		users: model
-	};
-	return model;
-};
-module.exports = main;
+let Users = mongoose.model('users', new mongoose.Schema({
+	email: {
+		type: String,
+		required: true,
+		index: {unique: true}
+	},
+	password: {
+		type: String,
+		required: true
+	},
+	tfa: {
+		type: Boolean,
+		required: false,
+		default: false
+	},
+	secret: {
+		type: String,
+		required: false,
+		default: null
+	},
+	balance: {
+		type: Number,
+		default: 0,
+		required: true
+	},
+	contributeEthAmount: {
+		type: Number,
+		default: 0
+	},
+	presetBalance: {
+		type: Number,
+		default: 0,
+		required: true
+	},
+	address: String,
+	preSaleAddress: {
+		type: String
+	},
+	disabled: {
+		type: Boolean,
+		default: false
+	},
+	lastLoginDate: {
+		type: Date,
+		default: null
+	},
+	role: {
+		type: String,
+		enum: ['user', 'admin'],
+		default: "user"
+	},
+	referralParams: {
+		inviteCode: {type: String, unique: true, default: shortid.generate},
+		referrer: {ref: 'users', type: mongoose.Schema.Types.ObjectId, index: true},
+	}
+}, {
+	timestamps: true
+}));
+
+module.exports = Users;

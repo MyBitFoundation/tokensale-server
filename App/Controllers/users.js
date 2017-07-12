@@ -12,6 +12,10 @@ let async = require('async'),
 let Controllers = getControllers(),
 	Models = getModels();
 
+let Repositories = {
+	users: require('../Repositories/users.repository')
+};
+
 class UsersController {
 	
 	constructor() {
@@ -20,92 +24,49 @@ class UsersController {
 	}
 	
 	init(callback) {
-		Models.users.find({
-			tfa: false
-		}, (err, users) => {
-			users.forEach((user) => {
-				if(user.address) {
-					Controllers.users.users[user.address] = user._id;
-				}
-				
-			});
-			
-			callback()
-		});
+		callback();
 	}
 	
 	registration(cb, data) {
-		let post = data._post;
-		if(!post.email) {
-			return cb('Email is required');
-		}
-		if(!post.email.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
-			return cb('Invalid email');
-		}
-		if(!post.password || post.password.length < 6) {
-			return cb('Password is required and must contain at least 6 characters');
-		}
-		if(post.address && !/^(0x)?[0-9a-f]{40}$/i.test(post.address)) {
-			return cb('Invalid address');
-		}
+		let {email, password, address, referrer_key} = data._post;
 		
-		let {email, password, address} = post;
-		
-		let passwordString = passwordHash.generate(password);
-		
-		email = email.toLowerCase();
-		Models.users.findOne({email}, (err, exist) => {
-			if(exist) return cb(`User with email ${email} already exist`);
-			
-			// ethHelper.generateBrainKey(passwordString, email, (privateKey)=>{
-			//     if(!privateKey){
-			//         return cb('User creation error');
-			//     }
-			
-			// let encryptedPrivateKey = ethHelper.encryptWithPassword(privateKey, password),
-			//     publicKey = ethHelper.publicFromPrivate(privateKey),
-			//     address = ethHelper.addressFromPrivate(privateKey);
-			
-			// if(!publicKey){
-			//     return cb('User creation error');
-			// }
-			
-			// //TODO only for tests. Password set in terminal
-			// if(config['ethereum']['rpc_enabled']){
-			//     let resultAddress = ethRPC.personal.importRawKey(privateKey.slice(2), ethPassword);
-			//
-			//     if(!resultAddress || (resultAddress != address)){
-			//         return cb('Unlocking user wallet error');
-			//     }
-			// }
-			
-			if(!address) address = '-';
-			Models.users.create({
-				email,
-				password: passwordString,
-				privateKey: address,
-				publicKey: address,
-				address: address
-			}, (err, user) => {
-				if(err) return GlobalError('09:23', err, cb);
-				
-				Controllers.users.users[user.address] = user._id;
-				
-				if(err) return GlobalError('103232432', err, cb);
-				logger.info(`User ${email} created`);
-				Controllers.authority.login(cb, data);
-				
-				mcAPI.post('/lists/' + config.mailchimp['id_subscriptions'] + '/members', {
-					email_address: email,
-					status: 'subscribed'
-				}).then((results) => {
-					logger.info(`Add user ${email} to subscribers`);
-				}).catch((err) => {
-					logger.warn(`Add user ${email} to subscribers error`, err);
+		async.waterfall([
+			cb => {
+				if(!referrer_key) return cb(null, null);
+				Repositories.users.findOne({
+					"referralParams.inviteCode": referrer_key
+				}, (err, Referral) => {
+					if(err) return cb(err);
+					
+					if(!Referral) return cb(null, null);
+					return cb(null, Referral._id);
 				});
-			});
-			// });
-			
+			},
+			(referrerId, cb) => {
+				Repositories.users.create(email, password, address, referrerId, (err, User) => {
+					if(err) return cb(err);
+					
+					logger.info(`User ${email} created`);
+					
+					mcAPI.post('/lists/' + config.mailchimp['id_subscriptions'] + '/members', {
+						email_address: email,
+						status: 'subscribed'
+					}).then((results) => {
+						logger.info(`Add user ${email} to subscribers`);
+					}).catch((err) => {
+						logger.warn(`Add user ${email} to subscribers error`, err);
+					});
+					
+					Controllers.authority.login(cb, data);
+				});
+			}
+		], (err, result) => {
+			if(err) {
+				if(typeof err == 'string')
+					err = {'email': [err]};
+				return cb(err);
+			}
+			cb(null, result);
 		});
 	}
 	

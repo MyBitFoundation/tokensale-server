@@ -4,6 +4,10 @@
 		"port": "27017",
 		"database": "608_mybit"
 	},
+	"raven": {
+		"enabled": true,
+		"config": "https://c49da81fc9914402ab681dbf9b4684bc:f401db00f9064d0eb37e8a076294104e@sentry.pixelplex.by/2"
+	},
 	"disableRaven": false,
 	"app_api_host": "60800",
 	"shapeshift": {

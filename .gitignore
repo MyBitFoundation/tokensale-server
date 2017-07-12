@@ -44,6 +44,7 @@ typings/
 # Optional npm cache directory
 .npm
 config/old.json
+migrations/.migrate
 
 # Optional eslint cache
 .eslintcache

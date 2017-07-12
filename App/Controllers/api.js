@@ -1,6 +1,6 @@
 "use strict";
 
-let async = require('async'),
+const async = require('async'),
 	logger = require('log4js').getLogger(),
 	moment = require('moment'),
 	express = require('express'),
@@ -13,22 +13,28 @@ let async = require('async'),
 	MongoStore = require('connect-mongo')(session),
 	cors = require('cors'),
 	multer = require('multer'),
-	fs = require('fs');
+	fs = require('fs'),
+	form = require('express-form');
 
 let Controllers = getControllers();
 let Contracts = getContracts();
 let Models = getModels();
 
+let Helpers = {
+	forms: require('../Helpers/forms.helper')
+};
+
 let APIController = {
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	initRoutes: () => {
-		APIController.addHandler('post', '/users/registration', Controllers.users.registration, true);
+		APIController.addHandler('post', '/users/registration', Controllers.users.registration, true, null, Helpers.forms.registration);
 		APIController.addHandler('post', '/users/login', Controllers.authority.login, true);
 		APIController.addHandler('get', '/users/logout', Controllers.authority.logout);
 		APIController.addHandler('get', '/users/info', Controllers.authority.info);
         APIController.addHandler('post', '/users/change-password', Controllers.users.changePassword);
         APIController.addHandler('post', '/users/enable-tfa', Controllers.users.enableTFA);
         APIController.addHandler('post', '/users/disable-tfa', Controllers.users.disableTFA);
+        APIController.addHandler('get', '/users/referrals', Controllers.referrals.getUserReferrals, false);
 
         APIController.addHandler('post', '/crowdsale/deposit', Controllers.crowdsale.deposit);
         APIController.addHandler('get', '/crowdsale/transactions', Controllers.crowdsale.transactions);
@@ -82,14 +88,17 @@ let APIController = {
 	/**
 	 * Register new route.
 	 */
-	addHandler: (type, route, action, isPublic, role) => {
+	addHandler: (type, route, action, isPublic, role, forms) => {
 		if(typeof action != 'function') {
 			logger.warn(`Action for route ${type}:${route} is not function`);
 		}
 		
-		APIController.app[type](route, (req, res) => {
+		if(!forms) forms = form();
+		
+		APIController.app[type](route, forms, (req, res) => {
 			let time = parseInt(moment().format('X'));
 			logger.info('Start request', route);
+			
 			async.waterfall([
 				cb => {
 					if(isPublic) return cb();
@@ -115,6 +124,11 @@ let APIController = {
 
                         return cb();
 					});
+				},
+				cb => {
+					if(!req.form.isValid)
+						return cb(req.form.getErrors());
+					return cb();
 				},
 				// run method
 				cb => {

@@ -136,7 +136,8 @@ let AuthorityController = {
 				presaleDeadline: Contracts.crowdsale.presaleDeadline,
 				contractAddress: Contracts.crowdsale.address,
 				amountRaised: amountRaised,
-				amountRaisedEUR: amountRaisedEUR
+				amountRaisedEUR: amountRaisedEUR,
+				referralKey: User.referralParams.inviteCode
 			});
 		});
 	}
