@@ -1,0 +1,39 @@
+server {
+	listen 80;
+	server_name st-age.mybit.io;
+	return 302 https://$host$request_uri;
+}
+
+server {
+	listen 443 ssl;
+	server_tokens off;
+	server_name st-age.mybit.io;
+	include mybit_ssl;
+	root /home/ubuntu/testnet/landing;
+	index index.php;
+
+	location ~ /\.git {
+		deny all;
+	}
+
+	location / {
+		proxy_read_timeout 150;
+		index index.php index.html index.htm;
+		try_files $uri $uri/ /index.php?$args;
+	}
+
+	location ~ \.php$ {
+		proxy_http_version 1.1;
+		proxy_set_header Connection "";
+		fastcgi_pass unix:/run/php/php7.0-fpm.sock;
+		try_files $uri =404;
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		fastcgi_param SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		fastcgi_index index.php;
+		include fastcgi_params;
+	}
+
+	location ~ /\.ht {
+		deny all;
+	}
+}
