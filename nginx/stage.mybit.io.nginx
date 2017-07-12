@@ -23,14 +23,12 @@ server {
 	}
 
 	location ~ \.php$ {
-		proxy_http_version 1.1;
-		proxy_set_header Connection "";
-		fastcgi_pass unix:/run/php/php7.0-fpm.sock;
-		try_files $uri =404;
-		fastcgi_split_path_info ^(.+\.php)(/.+)$;
-		fastcgi_param SCRIPT_FILENAME  $document_root$fastcgi_script_name;
+		fastcgi_pass 127.0.0.1:9000;
 		fastcgi_index index.php;
-		include fastcgi_params;
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		include /etc/nginx/fastcgi_params;
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		try_files $uri =404;
 	}
 
 	location ~ /\.ht {
