@@ -9,6 +9,7 @@ let async = require('async'),
 	Web3 = require('web3');
 
 let config = require('config');
+logger.info(config);
 
 if(!fs.existsSync(__dirname + '/password')) {
 	logger.error("File with password not found. Please create password file in root folder");
