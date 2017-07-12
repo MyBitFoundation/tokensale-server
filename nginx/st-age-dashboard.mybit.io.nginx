@@ -1,0 +1,29 @@
+server {
+	listen 80;
+	server_name st-age-dashboard.mybit.io;
+	return 302 https://$host$request_uri;
+}
+
+server {
+	listen 443 ssl;
+	server_tokens off;
+	root /home/ubuntu/testnet/dashboard/dist;
+	index index.html;
+	server_name st-age-dashboard.mybit.io;
+	include mybit_ssl;
+
+	location / {
+		try_files $uri $uri/ /index.html;
+
+		client_max_body_size       10m;
+		client_body_buffer_size    128k;
+
+		proxy_connect_timeout      90;
+		proxy_send_timeout         90;
+		proxy_read_timeout         90;
+		proxy_buffer_size          4k;
+		proxy_buffers              4 32k;
+		proxy_busy_buffers_size    64k;
+		proxy_temp_file_write_size 64k;
+	}
+}
