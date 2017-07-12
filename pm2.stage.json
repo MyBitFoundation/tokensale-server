@@ -1,6 +1,6 @@
 {
 	"apps": [{
-		"name": "stage-server",
+		"name": "608.mybit.stage-server",
 		"script": "server.js",
 		"max_memory_restart": "2000M",
 		"env": {
