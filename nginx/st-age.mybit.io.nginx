@@ -9,7 +9,7 @@ server {
 	server_tokens off;
 	server_name st-age.mybit.io;
 	include mybit_ssl;
-	root /home/ubuntu/testnet/landing;
+	root /var/www/608.mybit/landing;
 	index index.php;
 
 	location ~ /\.git {

@@ -7,7 +7,7 @@ server {
 server {
 	listen 443 ssl;
 	server_tokens off;
-	root /home/ubuntu/testnet/dashboard/dist;
+	root /var/www/608.mybit/dashboard/dist;
 	index index.html;
 	server_name st-age-dashboard.mybit.io;
 	include mybit_ssl;
