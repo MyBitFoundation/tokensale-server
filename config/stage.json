@@ -5,7 +5,7 @@
 	"disableRaven": true,
 	"app_api_host": "60801",
 	"ethereum": {
-		"public_key": "0xaf9ef553c2b2e38ba1638f6069b7ae8c0859c71b",
+		"public_key": "0x257ae79de03def9e07181f073312b4f1fbb89e6f",
 		"rpc": "http://s.pixelplex.by:6082",
 		"firstBlockForProcessing": 503629,
 		"rpc_enabled": true,
