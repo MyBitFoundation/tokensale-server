@@ -1,13 +1,13 @@
 server {
 	listen 80;
-	server_name st-age.mybit.io;
+	server_name stage.mybit.io;
 	return 302 https://$host$request_uri;
 }
 
 server {
 	listen 443 ssl;
 	server_tokens off;
-	server_name st-age.mybit.io;
+	server_name stage.mybit.io;
 	include mybit_ssl;
 	root /var/www/608.mybit/landing;
 	index index.php;
