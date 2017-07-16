@@ -3,14 +3,15 @@
 let mongoose = require("mongoose"),
 	dir = require('node-dir'),
 	async = require("async"),
-	config = require('config')['db'];
+	config = require('config')['db'],
+	logger = require('log4js').getLogger('App/Controllers/modelsWrapper');
 
 let modelNameList = {};
 
-let init = function(globalCb) {
+let init = function(globalCb = () => {}) {
 	async.waterfall([
 		(cb) => {
-			dir.files(RootDir + '/App/Models', function(err, files) {
+			dir.files(__dirname + '/../Models', function(err, files) {
 				if(err) throw err;
 				files.forEach(function(file) {
 					let name = file.replace(/.*\/([A-z]+)\.js/, '$1');
@@ -26,7 +27,7 @@ let init = function(globalCb) {
 			let userUrl = (config['user']) ? (config['user'] + ':' + config['password'] + '@') : '';
 			let url = 'mongodb://' + userUrl + config['host'] + ':' + config['port'] + '/' + config['database'];
 			mongoose.Promise = require('bluebird');
-			API.connect = mongoose.connect(url, function(err, db) {
+			API.connect = mongoose.connect(url, {useMongoClient: true}, function(err, db) {
 				if(err)
 					return cb(err);
 				

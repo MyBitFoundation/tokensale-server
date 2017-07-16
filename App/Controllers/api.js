@@ -20,6 +20,8 @@ let Controllers = getControllers();
 let Contracts = getContracts();
 let Models = getModels();
 
+Controllers.exchange = require('./exchange');
+
 let Helpers = {
 	forms: require('../Helpers/forms.helper')
 };
@@ -31,17 +33,17 @@ let APIController = {
 		APIController.addHandler('post', '/users/login', Controllers.authority.login, true);
 		APIController.addHandler('get', '/users/logout', Controllers.authority.logout);
 		APIController.addHandler('get', '/users/info', Controllers.authority.info);
-        APIController.addHandler('post', '/users/change-password', Controllers.users.changePassword);
-        APIController.addHandler('post', '/users/enable-tfa', Controllers.users.enableTFA);
-        APIController.addHandler('post', '/users/disable-tfa', Controllers.users.disableTFA);
-        APIController.addHandler('get', '/users/referrals', Controllers.referrals.getUserReferrals, false);
-
-        APIController.addHandler('post', '/crowdsale/deposit', Controllers.crowdsale.deposit);
-        APIController.addHandler('get', '/crowdsale/transactions', Controllers.crowdsale.transactions);
-        APIController.addHandler('get', '/crowdsale/rates', Controllers.crowdsale.rates, true);
-        APIController.addHandler('get', '/crowdsale/exchange-amount', Controllers.crowdsale.exchangeAmount, true);
-        
-        APIController.addHandler('get', '/admin/payers', Controllers.admin.printPayers, false, 'admin');
+		APIController.addHandler('post', '/users/change-password', Controllers.users.changePassword);
+		APIController.addHandler('post', '/users/enable-tfa', Controllers.users.enableTFA);
+		APIController.addHandler('post', '/users/disable-tfa', Controllers.users.disableTFA);
+		APIController.addHandler('get', '/users/referrals', Controllers.referrals.getUserReferrals, false);
+		
+		APIController.addHandler('post', '/crowdsale/deposit', Controllers.exchange.getTransactionAddress, false);
+		APIController.addHandler('get', '/crowdsale/transactions', Controllers.crowdsale.transactions);
+		APIController.addHandler('get', '/crowdsale/rates', Controllers.crowdsale.rates, true);
+		APIController.addHandler('get', '/crowdsale/exchange-amount', Controllers.crowdsale.exchangeAmount, true);
+		
+		APIController.addHandler('get', '/admin/payers', Controllers.admin.printPayers, false, 'admin');
 	},
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app: {},
@@ -103,27 +105,12 @@ let APIController = {
 				cb => {
 					if(isPublic) return cb();
 					if(!req.isAuthenticated()) return cb('User not logged', 403);
-
-                    Models.users.findOne({ email : req.user.email }, (err, user) => {
-                        if(err) {
-                            return cb(err);
-                        }
-                        if(!user) {
-                            return cb('User not logged', 403);
-                        }
-	
-	                    if(role && user.role != role) {
-		                    return cb('Access denied', 403);
-	                    }
-		
-	                    if(req.user.password != user.password || req.user.tfa != user.tfa){
-                            req.logout();
-                        	req.session.destroy();
-                            return cb('User not logged', 403);
-						}
-
-                        return cb();
-					});
+					let user = req.user;
+					
+					if(role && user.role != role) {
+						return cb('Access denied', 403);
+					}
+					return cb();
 				},
 				cb => {
 					if(!req.form.isValid)
@@ -141,12 +128,7 @@ let APIController = {
 					});
 				}
 			], (err, result) => {
-                let address = APIController.server.address();
-
 				res.header('Content-Type', 'text/json');
-				// res.header('Content-Security-Policy','default-src *; frame-src *');
-				// res.header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-				// res.header('Access-Control-Allow-Origin',req.protocol + '://' + address.address + ':' + address.port);
 				if(err) {
 					if(typeof err == 'string') {
 						err = {

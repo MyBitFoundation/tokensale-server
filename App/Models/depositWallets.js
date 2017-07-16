@@ -1,8 +1,31 @@
-/**
- * Created by shumer on 2/21/17.
- */
-let main = (Connect) => {
-	let TransactionSchema = new Connect.Schema({
+"use strict";
+
+const mongoose = require('mongoose');
+
+let DepositWallets = mongoose.model('deposit_wallets', new mongoose.Schema({
+	userId: {
+		type: String,
+		required: true
+	},
+	orderId: {
+		type: String,
+		required: true
+	},
+	deposit: {
+		type: String,
+		index: true,
+		required: true
+	},
+	depositType: {
+		type: String,
+		required: true
+	},
+	extraInfo: {
+		type: String,
+		default: false,
+		required: false
+	},
+	transaction: {
 		withdraw: String,
 		incomingCoin: Number,
 		incomingType: String,
@@ -13,48 +36,13 @@ let main = (Connect) => {
 		fundAmount: Number,
 		maxCommission: Number,
 		tokenPrice: Number
-	});
-	
-	let Schema = new Connect.Schema({
-		userId: {
-			type: String,
-			required: true
-		},
-		orderId: {
-			type: String,
-			required: true
-		},
-		deposit: {
-			type: String,
-			index: true,
-			required: true
-		},
-		depositType: {
-			type: String,
-			required: true
-		},
-		extraInfo: {
-			type: String,
-			default: false,
-			required: false
-		},
-		transaction: {
-			type: TransactionSchema,
-			default: false,
-			required: false
-		},
-		executedAt: {
-			type: Date,
-			default: null
-		}
-	}, {
-		timestamps: true
-	});
-	let model = Connect.model('deposit_wallets', Schema);
-	
-	let Models = {
-		depositWallets: model
-	};
-	return model;
-};
-module.exports = main;
+	},
+	executedAt: {
+		type: Date,
+		default: null
+	}
+}, {
+	timestamps: true
+}));
+
+module.exports = DepositWallets;

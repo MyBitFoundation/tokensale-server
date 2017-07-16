@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "scripts": {
     "start": "NODE_ENV=stage node server.js",
-    "watcher": "node watchers/blockchain.js"
+    "migrate-stage": "NODE_ENV=stage migrate",
+    "watcher": "node watchers/blockchain.js",
+    "watcher-stage": "NODE_ENV=stage node watcher.js"
   },
   "dependencies": {
     "async": "^2.1.5",
@@ -32,7 +34,7 @@
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
     "password-hash": "^1.2.2",
-    "raven": "^1.1.2",
+    "raven": "^2.1.0",
     "request": "^2.79.0",
     "scrypt-async": "^1.3.0",
     "shortid": "^2.2.8",

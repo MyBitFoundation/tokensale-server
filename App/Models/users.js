@@ -39,6 +39,7 @@ let Users = mongoose.model('users', new mongoose.Schema({
 		required: true
 	},
 	address: String,
+	generatedAddress: String,
 	preSaleAddress: {
 		type: String
 	},

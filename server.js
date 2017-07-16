@@ -4,30 +4,13 @@ let async = require('async'),
 	logger = require('log4js').getLogger("Main"),
 	dir = require('node-dir'),
 	fs = require('fs'),
-	Raven = require('raven'),
-	moment = require('moment'),
-	Web3 = require('web3');
+	raven = require('./App/Helpers/raven.helper'),
+	moment = require('moment');
 
 let config = require('config');
-logger.info(config);
+// logger.info(config);
+raven.initialize();
 
-if(!fs.existsSync(__dirname + '/password')) {
-	logger.error("File with password not found. Please create password file in root folder");
-	process.exit(1);
-}
-global.ethPassword = fs.readFileSync(__dirname + '/password').toString();
-logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-logger.error("!!!! Don't forget remove file with password !!!!");
-logger.error("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-if(!config.raven.enabled) {
-	Raven.config(config.raven.config, {
-		autoBreadcrumbs: true
-	}).install((e, d) => {
-		logger.error(d);
-		process.exit(1);
-	});
-}
 let Server = {
 	models: {},
     contracts: {},
@@ -107,44 +90,8 @@ global.getContracts = () => Server.contracts;
 
 global.getControllers = () => Server.controllers;
 
-global.GlobalError = (key, err, cb = () => {}) => {
-	logger.error(key, err);
-	cb('Unknown error');
-	if(Raven && !config['disableRaven']) {
-		if (!(err instanceof Error)) {
-			err = new Error(err);
-		}
-		err.key = key;
-		Raven.captureException(err, {
-			key: key
-		});
-	}
-};
+global.GlobalError = raven.GlobalError;
 global.RootDir = __dirname;
-
-let web3 = new Web3(new Web3.providers.HttpProvider(config['ethereum']['rpc']));
-
-web3._extend({
-    property: 'personal',
-    methods: [new web3._extend.Method({
-        name: 'importRawKey',
-        call: 'personal_importRawKey',
-        params: 2
-    })],
-    properties: []
-});
-
-global.ethRPC = web3;
-global.raven = Raven;
-global.sendWarning = (message, data) => {
-	logger.warn(message, data);
-	if(!Raven || config['disableRaven']) {
-		return;
-	}
-	Raven.captureMessage(message, {
-		level: 'warning',
-		extra: { error: data }
-	});
-};
+global.sendWarning = raven.sendWarning;
 
 Server.init();

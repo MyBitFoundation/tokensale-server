@@ -1,14 +1,10 @@
-/**
- * Created by shumer on 2/21/17.
- */
 let request = require('request'),
 	async = require('async'),
 	logger = require('log4js').getLogger('Crowdsale Controller'),
 	config = require('config'),
 	moment = require('moment'),
 	fx = require("money"),
-	ethHelper = require('../Components/eth'),
-	changelly = require('../Components/changelly');
+	changelly = require('../Helpers/changelly');
 
 fx.base = "USD";
 
@@ -31,26 +27,7 @@ class CrowdsaleController {
 	}
 	
 	deposit(callback, data) {
-		let {currency} = data._post,
-			{_id: userId, address} = data.user;
 		
-		if(!currency) {
-			return callback('Currency is required');
-		}
-		
-		currency = currency.toUpperCase();
-		
-		if(config['currencies']['crypto'].indexOf(currency) == -1) {
-			return callback(`Currency ${currency} is not allowed`);
-		}
-		
-		if(currency == 'ETH') {
-			return callback(null, {
-				address: address,
-				type: 'ETH',
-				min: 0
-			});
-		}
 		
 		async.parallel({
 			wallet: (cb) => {
@@ -93,22 +70,7 @@ class CrowdsaleController {
 				min
 			};
 			
-			switch(response.type) {
-				// case 'BTS':
-				// return callback(null, Object.assign(response, {
-				// 	address: wallet.extraInfo,
-				// 	memo: wallet.deposit
-				// }));
-				// break;
-				// case 'XRP':
-				//     return callback(null, Object.assign(response, {
-				//         address: wallet.deposit,
-				//         destTag: wallet.extraInfo
-				//     }));
-				//     break;
-				default:
-					return callback(null, response);
-			}
+			return callback(null, response);
 		});
 	}
 	

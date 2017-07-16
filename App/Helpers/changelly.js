@@ -67,20 +67,20 @@ let ChangellyClass = (function() {
         getCurrencies: function(callback) {
             return this._request('getCurrencies', {}, callback);
         },
-        generateAddress: function(from, to, address, extraId, callback) {
+        generateAddress: function(from, to, address, callback) {
             let params = {
-                from: from,
-                to: to,
+                from: from.toLowerCase(),
+                to: to.toLowerCase(),
                 address: address,
-                extraId: extraId
+                extraId: undefined
             };
 
             return this._request('generateAddress', params, callback);
         },
         getMinAmount: function(from, to, callback) {
             let params = {
-                from: from,
-                to: to
+                from: from.toLowerCase(),
+                to: to.toLowerCase()
             };
 
             return this._request('getMinAmount', params, callback);

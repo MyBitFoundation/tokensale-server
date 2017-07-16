@@ -6,8 +6,7 @@ let passport = require('passport'),
 	async = require('async'),
 	moment = require('moment'),
 	logger = require('log4js').getLogger(),
-	twoFactor = require('node-2fa'),
-	ethHelper = require('../Components/eth');
+	twoFactor = require('node-2fa');
 
 let Controllers = getControllers(),
 	Contracts = getContracts(),
@@ -52,11 +51,11 @@ let AuthorityController = {
 		));
 		
 		passport.serializeUser(function(user, done) {
-			done(null, user);
+			done(null, user._id);
 		});
 		
 		passport.deserializeUser(function(user, done) {
-			done(null, user);
+			Models.users.findById(user, (err, User) => done(err, User));
 		});
 	},
 	login: (cb, data) => {
@@ -101,44 +100,38 @@ let AuthorityController = {
 		cb();
 	},
 	info(cb, data) {
-		let {email, balance, tfa, lastLoginDate, publicKey} = data.req.session.passport.user,
-			address = ethHelper.addressFromPublic(publicKey);
+		let User = data.req.user;
 		
-		if(!data.req.session.passport.user._id)
+		let {email, tfa, lastLoginDate} = User;
+		
+		if(!User._id)
 			return cb('Unknown error');
-		Models.users.findOne({_id: data.req.session.passport.user._id}, (err, User) => {
-			if(!User) {
-				logger.error(`Not found user ${data.user._id}`);
-				return cb(`Unknown error`);
-			}
-			
-			let tokenPrice = Controllers.crowdsale.getTokenPrice();
-			let amountRaised = Contracts.crowdsale.amountRaised || 0;
-			let amountRaisedEUR = (
-				tokenPrice &&
-				amountRaised &&
-				Controllers.crowdsale.ratesData &&
-				Controllers.crowdsale.ratesData.fiat &&
-				Controllers.crowdsale.ratesData.fiat['EUR']
-			) ? parseFloat(Controllers.crowdsale.ratesData.fiat['EUR'] / tokenPrice * amountRaised).toFixed(6) : 0;
-			
-			cb(null, {
-				email: email,
-				balance: parseFloat(User.balance) + parseFloat(User.presetBalance),
-				csAddress: address ? address.slice(2) : null,
-				address: User.address,
-				tfa: tfa,
-				lastLoginDate: lastLoginDate,
-				tokenPrice: (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
-				precision: Contracts.token.precision,
-				endTime: Contracts.crowdsale.endDate,
-				deadline: Contracts.crowdsale.deadline,
-				presaleDeadline: Contracts.crowdsale.presaleDeadline,
-				contractAddress: Contracts.crowdsale.address,
-				amountRaised: amountRaised,
-				amountRaisedEUR: amountRaisedEUR,
-				referralKey: User.referralParams.inviteCode
-			});
+		
+		let tokenPrice = Controllers.crowdsale.getTokenPrice();
+		let amountRaised = Contracts.crowdsale.amountRaised || 0;
+		let amountRaisedEUR = (
+			tokenPrice &&
+			amountRaised &&
+			Controllers.crowdsale.ratesData &&
+			Controllers.crowdsale.ratesData.fiat &&
+			Controllers.crowdsale.ratesData.fiat['EUR']
+		) ? parseFloat(Controllers.crowdsale.ratesData.fiat['EUR'] / tokenPrice * amountRaised).toFixed(6) : 0;
+		
+		cb(null, {
+			email: email,
+			balance: parseFloat(User.balance) + parseFloat(User.presetBalance),
+			address: User.address,
+			tfa: tfa,
+			lastLoginDate: lastLoginDate,
+			tokenPrice: (1 / Controllers.crowdsale.getTokenPrice()).toFixed(6),
+			precision: Contracts.token.precision,
+			endTime: Contracts.crowdsale.endDate,
+			deadline: Contracts.crowdsale.deadline,
+			presaleDeadline: Contracts.crowdsale.presaleDeadline,
+			contractAddress: Contracts.crowdsale.address,
+			amountRaised: amountRaised,
+			amountRaisedEUR: amountRaisedEUR,
+			referralKey: User.referralParams.inviteCode
 		});
 	}
 };

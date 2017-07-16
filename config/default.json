@@ -19,7 +19,8 @@
 		"rpc": "http://localhost:6081",
 		"firstBlockForProcessing": 503629,
 		"rpc_enabled": true,
-		"crowdSaleContractAddress": "0x6e0eC952e49212F2e2E2f94FEdaa84f5C044acef"
+		"crowdSaleContractAddress": "0x6e0eC952e49212F2e2E2f94FEdaa84f5C044acef",
+		"gas": 300000
 	},
 	"currencies": {
 		"enable": true,

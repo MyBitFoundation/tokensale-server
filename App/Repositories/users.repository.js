@@ -6,6 +6,10 @@ let Models = {
 	users: require('../Models/users')
 };
 
+let Helpers = {
+	ethereum: require('../Helpers/ethereum.helper')
+};
+
 class UsersRepository {
 	
 	static findByEmail(email, cb) {
@@ -27,6 +31,7 @@ class UsersRepository {
 		Models.users.create({
 			email, password,
 			address: address || "",
+			generatedAddress: Helpers.ethereum.generateNewAddress(),
 			referralParams: {
 				referrer: referrerId,
 				inviteCode: shortid.generate()
@@ -43,6 +48,21 @@ class UsersRepository {
 		}, "email contributeEthAmount address", (err, List) => {
 			if(err) return raven.error(err, '1499869931753', cb);
 			return cb(null, List);
+		});
+	}
+	
+	static updateBalance(address, cb) {
+		Models.user.findOne({
+			$or: [{
+				generatedAddress: address
+			}, {
+				address: address
+			}]
+		}, (err, User) => {
+			if(err) return raven.error(err, '1500210293026', cb);
+			if(!User) return cb();
+			
+			
 		});
 	}
 }

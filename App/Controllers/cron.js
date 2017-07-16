@@ -9,7 +9,7 @@ let request = require('request'),
 	fx = require("money"),
 	BigNumber = require('bignumber.js'),
 	ethHelper = require('../Components/eth'),
-    changelly = require('../Components/changelly');
+    changelly = require('../Helpers/changelly');
 
 let Controllers = getControllers(),
 	Contracts = getContracts(),

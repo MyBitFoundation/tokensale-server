@@ -29,3 +29,23 @@ Get user referrals
 	}
 ]
 ```
+
+### `POST` /crowdsale/deposit
+Generate new address for deposit
+
+#### request
+```json
+{
+	"currency": "BTC"
+}
+```
+
+#### response
+```json
+{
+	"address": "19F0sdf8sdfaas0334koko2kpokjjas",
+    "type": "BTC",
+    "extra": "",
+    "min": 0.001
+}
+```
