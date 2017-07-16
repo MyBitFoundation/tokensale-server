@@ -1,6 +1,8 @@
 const raven = require('../Helpers/raven.helper'),
 	shortid = require('shortid'),
-	passwordHash = require('password-hash');
+	passwordHash = require('password-hash'),
+	BigNumber = require('bignumber.js'),
+	logger = require('log4js').getLogger('App/Repositories/users.repository');
 
 let Models = {
 	users: require('../Models/users')
@@ -8,6 +10,9 @@ let Models = {
 
 let Helpers = {
 	ethereum: require('../Helpers/ethereum.helper')
+};
+let Contracts = {
+	token: require('../Contracts/token')
 };
 
 class UsersRepository {
@@ -51,8 +56,8 @@ class UsersRepository {
 		});
 	}
 	
-	static updateBalance(address, cb) {
-		Models.user.findOne({
+	static updateBalance(address, cb = () => {}) {
+		Models.users.findOne({
 			$or: [{
 				generatedAddress: address
 			}, {
@@ -62,7 +67,16 @@ class UsersRepository {
 			if(err) return raven.error(err, '1500210293026', cb);
 			if(!User) return cb();
 			
-			
+			let balance = new BigNumber(0);
+			if(User.address)
+				balance = balance.plus(Contracts.token.getBalance(User.address));
+			balance = balance.plus(Contracts.token.getBalance(User.generatedAddress));
+			logger.info(`Recalculate balance for user ${User.email}. Old - ${User.balance}, new - ${balance.toString()}`);
+			User.balance = balance.toNumber();
+			User.save(err => {
+				if(err) return raven.error(err, '1500211309516', cb);
+				return cb();
+			});
 		});
 	}
 }

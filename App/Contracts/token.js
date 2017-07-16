@@ -3,11 +3,11 @@
 let abe = require('./token.abe.json');
 
 let logger = require('log4js').getLogger('Token Contract'),
-	config = require('config');
+	config = require('config'),
+	BigNumber = require('bignumber.js');
 
-let Contracts = getContracts();
-let Models = getModels();
-
+let Contracts = typeof getContracts !== 'undefined' ? getContracts() : {};
+Contracts.crowdsale = require('./crowdsale');
 let Helpers = {
 	ethereum: require('../Helpers/ethereum.helper')
 };
@@ -59,6 +59,10 @@ class TokenContract {
 				Repositories.settings.set('last_block_with_token_log', result.blockNumber);
 			});
 		});
+	}
+	
+	getBalance(address) {
+		return new BigNumber(this.contract.balanceOf(address)).div(this.precision);
 	}
 }
 

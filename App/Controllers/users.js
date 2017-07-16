@@ -88,10 +88,10 @@ class UsersController {
 		let {email, password} = req.user;
 		let address = _post.address;
 		
-		if(address && !/^(0x)?[0-9a-f]{40}$/i.test(address)) {
+		if(address && !/^(0x)?[0-9a-fA-F]{40}$/i.test(address)) {
 			return callback('Invalid address');
 		}
-		
+		let needRecalculateBalance = false;
 		Models.users.findOne({email}, (err, user) => {
 			if(!user) return callback(`User with email ${email} is not exist`);
 			
@@ -99,18 +99,11 @@ class UsersController {
 				return callback('Incorrect password');
 			}
 			
-			// let privateKey  = ethHelper.decryptWithPassword(user.privateKey, _post.password_old),
-			//     address     = ethHelper.addressFromPrivate(privateKey);
-			
-			// if(!address || user.address != address){
-			//     return callback("Private key decryption password error")
-			// }
-			if(!address) address = '-';
-			
 			user.password = passwordHash.generate(_post.password_new);
-			// user.privateKey = ethHelper.encryptWithPassword(privateKey, _post.password_new);
-			user.privateKey = address;
-			user.publicKey = address;
+			
+			if(address != user.address) {
+				needRecalculateBalance = true;
+			}
 			user.address = address;
 			
 			user.save((err, user) => {
@@ -119,6 +112,7 @@ class UsersController {
 				req.session.passport.user = user;
 				
 				Controllers.authority.info(callback, data);
+				Repositories.users.updateBalance(address);
 			});
 		});
 	}
