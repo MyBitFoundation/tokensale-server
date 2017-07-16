@@ -42,6 +42,7 @@ let APIController = {
 		APIController.addHandler('get', '/crowdsale/transactions', Controllers.crowdsale.transactions);
 		APIController.addHandler('get', '/crowdsale/rates', Controllers.crowdsale.rates, true);
 		APIController.addHandler('get', '/crowdsale/exchange-amount', Controllers.crowdsale.exchangeAmount, true);
+		APIController.addHandler('get', '/crowdsale/info', Controllers.crowdsale.getCurrentInfo, true);
 		
 		APIController.addHandler('get', '/admin/payers', Controllers.admin.printPayers, false, 'admin');
 	},

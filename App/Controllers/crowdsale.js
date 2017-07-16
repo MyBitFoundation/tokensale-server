@@ -16,6 +16,9 @@ let Controllers = getControllers(),
 let Repositories = {
 	history: require('../Repositories/history.repository')
 };
+let Helper = {
+	coinmarketcap: require('../Helpers/coinmarketcap.helper')
+};
 
 class CrowdsaleController {
 	
@@ -25,6 +28,8 @@ class CrowdsaleController {
 			crypto: {}
 		};
 		logger.info('Crowdsale controller initialized');
+		
+		this.getCurrentInfo = this.getCurrentInfo.bind(this);
 	}
 	
 	getTokenPrice() {
@@ -38,7 +43,7 @@ class CrowdsaleController {
 			
 			let result = [];
 			List.forEach(Tx => {
-				let amount = Tx.changellyInfo.id ? Tx.changellyInfo.amountFrom : Tx.amount;
+				let amount = Tx.changellyInfo.id ? Tx.changellyInfo.amountFrom : Tx.amount.toFixed(20);
 				result.push({
 					date: moment(Tx.createdAt).format('YYYY-MM-DD HH:mm:ss'),
 					sentAmount: amount,
@@ -46,7 +51,7 @@ class CrowdsaleController {
 					transactionId: Tx.transactionHash,
 					address: Tx.address,
 					receivedAmount: Tx.receivedTokens,
-					tokenPrice: new BigNumber(Tx.receivedTokens).div(amount).toFixed(2)
+					tokenPrice: new BigNumber(Tx.receivedTokens.toFixed(20)).div(amount).toFixed(2)
 				});
 			});
 			return cb(null, result);
@@ -95,6 +100,15 @@ class CrowdsaleController {
 			if(error) callback(error);
 			
 			callback(null, result);
+		});
+	}
+	
+	getCurrentInfo(cb) {
+		Repositories.history.getForInfo((err, Info) => {
+			if(err) return cb(err);
+			Info = Info[0];
+			Info.amountInUsd = new BigNumber(Info.amount.toFixed(20)).mul(Helper.coinmarketcap.ethPrice).toNumber();
+			return cb(err, Info);
 		});
 	}
 }

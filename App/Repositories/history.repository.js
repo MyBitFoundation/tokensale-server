@@ -38,9 +38,9 @@ class HistoryRepository {
 		amount = new BigNumber(amount);
 		Models.history.create({
 			userId: userId,
-			amount: amount,
+			amount: new BigNumber(amount).toNumber(),
 			address: address,
-			receivedTokens: amount.div(Contracts.crowdsale.currentPrice),
+			receivedTokens: amount.div(Contracts.crowdsale.currentPrice).toNumber(),
 			transactionHash: txHash,
 			changellyInfo: changellyInfo
 		}, (err) => {
@@ -58,6 +58,23 @@ class HistoryRepository {
 		}, (err, List) => {
 			if(err) return raven.error(err, '1500212453302', cb);
 			return cb(null, List);
+		});
+	}
+	
+	static getForInfo(cb) {
+		Models.history.aggregate([{
+				$group: {
+					_id: "$coin",
+					amount: {$sum: "$amount"},
+					tokens: {$sum: "$receivedTokens"},
+					count: {$addToSet: "$address"}
+				}
+			}, {
+				$project: {_id: 1, amount: 1, tokens: 1, countInvestors: {$size: "$count"}}
+			}]
+		).exec((err, Info) => {
+			if(err) return raven.error(err, '1499959996923', cb);
+			cb(null, Info);
 		});
 	}
 }

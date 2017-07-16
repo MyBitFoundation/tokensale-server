@@ -14,11 +14,11 @@ let History = mongoose.model('history', new mongoose.Schema({
 		index: true
 	},
 	amount: {
-		type: String,
+		type: Number,
 		required: true
 	},
 	receivedTokens: {
-		type: String,
+		type: Number,
 		required: true
 	},
 	transactionHash:{

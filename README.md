@@ -49,3 +49,17 @@ Generate new address for deposit
     "min": 0.001
 }
 ```
+
+### `GET` /crowdsale/info
+Get info about current crowdsale state
+
+#### response
+```json
+{
+	"_id": null,
+	"amount": 1.057716735214788,
+	"tokens": 141.0288980286384,
+	"countInvestors": 2,
+	"amountInUsd": 157.7711436581082
+}
+```
