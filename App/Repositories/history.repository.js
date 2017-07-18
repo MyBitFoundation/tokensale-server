@@ -52,7 +52,6 @@ class HistoryRepository {
 	}
 	
 	static getByAddresses(addresses, cb) {
-		logger.info(addresses);
 		Models.history.find({
 			address: {
 				$in: addresses

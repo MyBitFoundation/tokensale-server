@@ -104,7 +104,7 @@ class UsersController {
 			if(address != user.address) {
 				needRecalculateBalance = true;
 			}
-			user.address = address;
+			user.address = address.toLowerCase();
 			
 			user.save((err, user) => {
 				if(err) return callback(`Updating user error`);

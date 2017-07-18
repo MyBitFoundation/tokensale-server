@@ -38,7 +38,7 @@ class CrowdsaleController {
 	
 	transactions(cb, data) {
 		let user = data.req.user;
-		Repositories.history.getByAddresses([user.generatedAddress, user.address], (err, List) => {
+		Repositories.history.getByAddresses([user.generatedAddress.toLowerCase(), user.address.toLowerCase()], (err, List) => {
 			if(err) return cb(err);
 			
 			let result = [];
