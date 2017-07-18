@@ -108,6 +108,7 @@ class CrowdsaleController {
 			if(err) return cb(err);
 			Info = Info[0];
 			Info.amountInUsd = new BigNumber(Info.amount.toFixed(20)).mul(Helper.coinmarketcap.ethPrice).toNumber();
+			Info.countInvestors += 800;
 			return cb(err, Info);
 		});
 	}
