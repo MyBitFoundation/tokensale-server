@@ -19,13 +19,15 @@ class HistoryRepository {
 		});
 	}
 	
-	static newLog(userId, address, amount, transactionHash, changellyInfo, cb) {
+	static newLog(userId, address, amount, transactionHash, blockNumber, changellyInfo, cb) {
 		Models.history.findOne({transactionHash}, (err, Row) => {
 			if(err) return raven.error(err, '1500207489329', cb);
-			if(!Row) return this.addNew(userId, address, amount, transactionHash, changellyInfo, cb);
+			if(!Row) return this.addNew(userId, address, amount, transactionHash, blockNumber, changellyInfo, cb);
 			
 			if(userId)
 				Row.userId = userId;
+			if(blockNumber)
+				Row.blockNumber = blockNumber;
 			if(changellyInfo)
 				Row.changellyInfo = changellyInfo;
 			Row.save(err => {
@@ -35,7 +37,7 @@ class HistoryRepository {
 		});
 	}
 	
-	static addNew(userId, address, amount, txHash, changellyInfo, cb) {
+	static addNew(userId, address, amount, txHash, blockNumber, changellyInfo, cb) {
 		amount = new BigNumber(amount);
 		Models.history.create({
 			userId: userId,
@@ -43,6 +45,7 @@ class HistoryRepository {
 			address: address,
 			receivedTokens: amount.div(Contracts.crowdsale.currentPrice).toNumber(),
 			transactionHash: txHash,
+			blockNumber: blockNumber,
 			changellyInfo: changellyInfo
 		}, (err) => {
 			if(err) return raven.error(err, '1500207431257', cb);

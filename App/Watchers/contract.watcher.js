@@ -33,7 +33,7 @@ class ContractWatcher {
 			address, amount,
 			log: Obj
 		});
-		Repositories.history.newLog(null, address, amount, Obj.transactionHash, null, () => {});
+		Repositories.history.newLog(null, address, amount, Obj.transactionHash, Obj.blockNumber, null, () => {});
 	}
 	
 	parseFountLogData(data) {

@@ -28,6 +28,9 @@ let History = mongoose.model('history', new mongoose.Schema({
 			unique: true
 		}
 	},
+	blockNumber:{
+		type: Number
+	},
 	changellyInfo: {
 		id: String,
 		createdAt: Number,
