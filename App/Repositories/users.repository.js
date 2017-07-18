@@ -12,7 +12,8 @@ let Helpers = {
 	ethereum: require('../Helpers/ethereum.helper')
 };
 let Contracts = {
-	token: require('../Contracts/token')
+	token: require('../Contracts/token'),
+	crowdsale: require('../Contracts/crowdsale')
 };
 
 class UsersRepository {
