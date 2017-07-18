@@ -1,5 +1,6 @@
 const logger = require('log4js').getLogger('App/Controller/exchange'),
 	config = require('config'),
+	raven = require('../Helpers/raven.helper'),
 	async = require('async');
 
 let Helpers = {
