@@ -7,7 +7,7 @@ let Repositories = {
 module.exports = {
 	
 	registration: form(
-		form.validate('email').trim().isEmail('Not a valid email address').required('Email is required.')
+		form.validate('email').trim().toLower().isEmail('Not a valid email address').required('Email is required.')
 			.custom((email, source, cb) => {
 				Repositories.users.findByEmail(email.toLowerCase(), (err, result) => {
 					if(err) cb(new Error(err));

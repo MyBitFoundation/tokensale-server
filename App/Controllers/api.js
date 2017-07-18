@@ -100,7 +100,7 @@ let APIController = {
 		
 		APIController.app[type](route, forms, (req, res) => {
 			let time = parseInt(moment().format('X'));
-			logger.info('Start request', route);
+			// logger.info('Start request', route);
 			
 			async.waterfall([
 				cb => {
@@ -143,14 +143,14 @@ let APIController = {
 						result: result
 					};
 				}
-				logger.info('End request', route, parseInt(moment().format('X')) - time);
+				// logger.info('End request', route, parseInt(moment().format('X')) - time);
 				return res.send(result);
 			});
 			APIController.logRouter(type, route);
 		});
 	},
 	logRouter: (type, route) => {
-		return logger.info(`[REQUEST] ${type.toUpperCase()}: '${route}'`);
+		// return logger.info(`[REQUEST] ${type.toUpperCase()}: '${route}'`);
 	}
 };
 Controllers.api = APIController;
