@@ -3,7 +3,8 @@ let async = require('async'),
 	config = require('config'),
 	moment = require('moment'),
 	abe = require('./crowdsale.abe.json'),
-	cron = require('node-cron');
+	cron = require('node-cron'),
+	BigNumber = require('bignumber.js');
 
 let Contracts = typeof getContracts !== 'undefined' ? getContracts() : {};
 let Models = typeof getModels !== 'undefined' ? getModels() : {};
@@ -55,6 +56,10 @@ class CrowdsaleContract {
 				Repositories.settings.set('last_block_with_crowdsale_log', result.blockNumber);
 			});
 		});
+	}
+	
+	getBalance(address) {
+		return new BigNumber(this.contract.balanceOf(address)).div(Math.pow(10, 8));
 	}
 }
 
