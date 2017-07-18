@@ -34,7 +34,8 @@ class UsersRepository {
 	static create(email, password, address, referrerId, cb) {
 		password = passwordHash.generate(password);
 		Models.users.create({
-			email, password,
+			email: email.toLowerCase(),
+			password: password,
 			address: address || "",
 			generatedAddress: Helpers.ethereum.generateNewAddress(),
 			referralParams: {
