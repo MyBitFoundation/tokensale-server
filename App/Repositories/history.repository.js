@@ -1,5 +1,6 @@
 const raven = require('../Helpers/raven.helper'),
-    BigNumber = require('bignumber.js');
+    BigNumber = require('bignumber.js'),
+	logger = require('log4js').getLogger('App/Repositories/history.repository');
 let Models = {
 	history: require('../Models/history')
 };
