@@ -1,6 +1,7 @@
 const async = require('async'),
 	logger = require('log4js').getLogger('App/Watchers/exchange.watcher'),
-	raven = require('../Helpers/raven.helper');
+	raven = require('../Helpers/raven.helper'),
+	BigNumber = require('bignumber.js');
 
 let Repositories = {
 	exchangeTransactions: require('../Repositories/exchangeTransactions.repository'),
@@ -48,7 +49,7 @@ class ExchangeWatcher {
 					if(Exist) return cb();
 					
 					logger.info('Changelly info', ChangellyTx);
-					let amount = ChangellyTx.amountTo;
+					let amount = new BigNumber(ChangellyTx.amountTo).minus(ChangellyTx.networkFee);
 					
 					Helpers.ethereum.sendToCrowdsale(Wallet.destinationAddress, amount, (err, result) => {
 						if(err) return cb(err);
