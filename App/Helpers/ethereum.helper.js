@@ -55,7 +55,6 @@ class EthereumHelper {
 			logger.info(transactionObject);
 			logger.info(this.web3.fromWei(transactionFee));
 			this.web3.eth.sendTransaction(transactionObject, (err, transactionHash) => {
-				console.log(err, transactionHash);
 				if(err) return raven.error(err, '1500204447193', cb);
 				return cb(null, {
 					transactionHash,
