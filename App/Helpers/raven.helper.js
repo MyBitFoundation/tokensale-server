@@ -20,13 +20,12 @@ class RavenHelper {
 			logger.error(error);
 			return cb('Error ' + key);
 		}
-		logger.info('Error typeof', typeof error);
-		if(typeof error === 'object') {
-			error = JSON.stringify(error);
-		}
 		if(error instanceof Error) {
 			Raven.captureException(error);
 		} else {
+			if(typeof error === 'object') {
+				error = JSON.stringify(error);
+			}
 			if(typeof error === 'string') {
 				Raven.captureMessage(error, (err, eventId) => {
 					logger.error(error, key, eventId);
