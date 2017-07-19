@@ -29,7 +29,7 @@ class ExchangeWatcher {
 			
 			async.eachSeries(List, (Wallet, cb) => {
 				return this.checkChangellyTransaction(Wallet, cb);
-			});
+			}, err => cb(err));
 		});
 	}
 	
