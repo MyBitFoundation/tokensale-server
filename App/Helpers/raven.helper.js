@@ -20,6 +20,7 @@ class RavenHelper {
 			logger.error(error);
 			return cb('Error ' + key);
 		}
+		logger.info('Error typeof', typeof error);
 		if(typeof error === 'object') {
 			error = JSON.stringify(error);
 		}
