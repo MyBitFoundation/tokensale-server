@@ -5,10 +5,13 @@ const Raven = require('raven'),
 class RavenHelper {
 	static initialize() {
 		if(config.raven.enabled) {
+			logger.info('Configure raven');
 			Raven.config(config.raven.config).install((e, d) => {
 				logger.error(d);
 				process.exit(1);
 			});
+		} else {
+			logger.warn('Raven is disabled');
 		}
 	}
 	
