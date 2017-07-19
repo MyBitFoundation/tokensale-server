@@ -21,6 +21,7 @@ class RavenHelper {
 			return cb('Error ' + key);
 		}
 		if(error instanceof Error) {
+			logger.error(error, key, eventId);
 			Raven.captureException(error);
 		} else {
 			if(typeof error === 'object') {

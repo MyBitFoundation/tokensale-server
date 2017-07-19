@@ -47,6 +47,7 @@ class ExchangeWatcher {
 					if(err) return cb(err);
 					if(Exist) return cb();
 					
+					logger.info('Changelly info', ChangellyTx);
 					let amount = ChangellyTx.amountTo;
 					
 					Helpers.ethereum.sendToCrowdsale(Wallet.destinationAddress, amount, (err, result) => {
