@@ -15,7 +15,7 @@ class RavenHelper {
 		}
 	}
 	
-	static error(error, key, cb) {
+	static error(error, key, cb = () => {}) {
 		if(!config.raven.enabled) {
 			logger.error(error);
 			return cb('Error ' + key);
