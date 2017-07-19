@@ -14,6 +14,7 @@ let Watchers = {
 class Watcher {
 	
 	constructor() {
+		raven.initialize();
 		// this.startFundTransferWatcher();
 		
 		Watchers.exchange.startWatcher();
