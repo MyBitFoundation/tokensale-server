@@ -54,7 +54,7 @@ class ExchangeWatcher {
 					Helpers.ethereum.sendToCrowdsale(Wallet.destinationAddress, amount, (err, result) => {
 						if(err) return cb(err);
 						
-						Repositories.history.newLog(Wallet.userId, Wallet.destinationAddress, result.amount, result.transactionHash, ChangellyTx, cb);
+						Repositories.history.newLog(Wallet.userId, Wallet.destinationAddress, result.amount, result.transactionHash, 0, ChangellyTx, cb);
 					});
 				});
 			});
