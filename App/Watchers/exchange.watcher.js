@@ -60,7 +60,7 @@ class ExchangeWatcher {
 						Repositories.history.newLog(Wallet.userId, Wallet.destinationAddress, result.amount, result.transactionHash, 0, ChangellyTx, cb);
 					});
 				});
-			});
+			}, (err) => cb(err));
 		});
 	}
 }
