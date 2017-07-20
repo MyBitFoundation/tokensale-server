@@ -36,10 +36,13 @@ class ExchangeWatcher {
 	
 	checkChangellyTransaction(Wallet, cb) {
 		let balance = Helpers.ethereum.web3.fromWei(Helpers.ethereum.web3.eth.getBalance(Wallet.destinationAddress), "ether");
+		logger.info(`Check wallet ${Wallet.destinationAddress}. Balance - ${balance}`);
 		if(balance < 0.01) return cb();
 		
 		Helpers.changelly.getTransactions(10, undefined, undefined, Wallet.depositAddress, undefined, (err, result) => {
+			
 			let list = result.result;
+			logger.info(`Changelly returned ${list.length} transaction`);
 			
 			async.eachSeries(list, (ChangellyTx, cb) => {
 				if(ChangellyTx.status != 'finished') return cb();
