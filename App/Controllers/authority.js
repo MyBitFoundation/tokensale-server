@@ -101,7 +101,7 @@ let AuthorityController = {
 	},
 	info(cb, data) {
 		let User = data.req.user;
-		
+
 		let {email, tfa, lastLoginDate} = User;
 		
 		if(!User._id)
