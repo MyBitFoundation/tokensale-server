@@ -16,7 +16,7 @@
 			"NODE_APP_INSTANCE": "production"
 		}
 	}, {
-		"name": "watcher",
+		"name": "balance-updater",
 		"script": "update-balance.js",
 		"max_memory_restart": "2000M",
 		"env": {
