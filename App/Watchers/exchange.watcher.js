@@ -53,7 +53,7 @@ class ExchangeWatcher {
 					
 					logger.info('Changelly info', ChangellyTx);
 					let amount = new BigNumber(ChangellyTx.amountTo).minus(ChangellyTx.networkFee);
-					
+					logger.info(amount, balance);
 					Helpers.ethereum.sendToCrowdsale(Wallet.destinationAddress, amount, (err, result) => {
 						if(err) return cb(err);
 						
