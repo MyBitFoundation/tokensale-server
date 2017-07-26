@@ -31,7 +31,7 @@ class Updater {
 	}
 	
 	updateForUser(User, cb) {
-		logger.info(`Check for ${User.email}`);
+		// logger.info(`Check for ${User.email}`);
 		Repositories.users.updateBalance(User.generatedAddress, err => cb(err));
 	}
 }
