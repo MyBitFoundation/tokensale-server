@@ -62,7 +62,11 @@ class TokenContract {
 	}
 	
 	getBalance(address) {
-		return new BigNumber(this.contract.balanceOf(address) || 0).div(this.precision);
+		try {
+			return new BigNumber(this.contract.balanceOf(address) || 0).div(this.precision);
+		} catch(e) {
+			return new BigNumber(0);
+		}
 	}
 }
 
