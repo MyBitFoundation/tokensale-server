@@ -50,7 +50,7 @@ class EthereumHelper {
 			};
 			let transactionFee = transactionObject.gasPrice * config['ethereum']['gas'];
 			transactionObject.value = amount - transactionFee;
-			transactionObject.gas = config['ethereum']['gas'];
+			transactionObject.gas = config['ethereum']['gas'] - 1;
 			logger.info(`New transaction to CrwodSale contract`);
 			logger.info(transactionObject);
 			logger.info(this.web3.fromWei(transactionFee));
