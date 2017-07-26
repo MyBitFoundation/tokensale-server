@@ -12,6 +12,7 @@ class Updater {
 	
 	constructor() {
 		raven.initialize();
+		this.runIteration();
 	}
 	
 	runIteration() {
@@ -30,6 +31,7 @@ class Updater {
 	}
 	
 	updateForUser(User, cb) {
+		logger.info(`Check for ${User.email}`);
 		Repositories.users.updateBalance(User.generatedAddress, err => cb(err));
 	}
 }
