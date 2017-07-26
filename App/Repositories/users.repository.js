@@ -78,7 +78,7 @@ class UsersRepository {
 			
 			let balance = new BigNumber(0);
 			let contributeEthAmount = new BigNumber(0);
-			if(User.address) {
+			if(User.address && User.address != '-') {
 				balance = balance.plus(Contracts.token.getBalance(User.address));
 				contributeEthAmount = contributeEthAmount.plus(Contracts.crowdsale.getBalance(User.address));
 			}
