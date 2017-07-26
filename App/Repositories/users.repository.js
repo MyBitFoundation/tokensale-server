@@ -25,6 +25,13 @@ class UsersRepository {
 		});
 	}
 	
+	static findAll(cb) {
+		Models.users.find({}, (err, list) => {
+			if(err) return raven.error(err, '1501094926402', cb);
+			return cb(null, list);
+		});
+	}
+	
 	static findOne(query, cb) {
 		Models.users.findOne(query, (err, result) => {
 			if(err) return raven.error(err, '1499867999023', cb);

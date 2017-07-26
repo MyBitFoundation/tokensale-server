@@ -38,9 +38,6 @@ class CrowdsaleContract {
 		this.amountRaised = Helpers.ethereum.web3.fromWei(this.contract.totalCollected());
 		this.currentStage = this.contract.currentStage().toString();
 		this.currentPrice = Helpers.ethereum.web3.fromWei(parseInt(this.contract.prices(this.currentStage)) * Math.pow(10, 8));
-		
-		logger.info(this.getBalance("0x15CCdbB608dC28e8CeaA8521F908e6bfEE0856E9"));
-		logger.info(this.getBalance("0x15ccdbb608dc28e8ceaa8521f908e6bfee0856e9"));
 	}
 	
 	setFoundTransferCallback(cb) {
