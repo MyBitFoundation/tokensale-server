@@ -144,7 +144,8 @@ class UsersController {
 			user.secret = _post.secret;
 			user.save((err, user) => {
 				if(err) return callback(`Updating user error`);
-				
+
+                req.user = user;
 				req.session.passport.user = user;
 				
 				Controllers.authority.info(callback, data);
@@ -186,7 +187,8 @@ class UsersController {
 			user.secret = null;
 			user.save((err, user) => {
 				if(err) return callback(`Updating user error`);
-				
+
+                req.user = user;
 				req.session.passport.user = user;
 				
 				Controllers.authority.info(callback, data);
