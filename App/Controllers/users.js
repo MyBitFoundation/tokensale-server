@@ -145,8 +145,8 @@ class UsersController {
 			user.save((err, user) => {
 				if(err) return callback(`Updating user error`);
 
-                req.user = user;
-				req.session.passport.user = user;
+                data.req.user = user;
+                data.req.session.passport.user = user;
 				
 				Controllers.authority.info(callback, data);
 			});
@@ -178,7 +178,7 @@ class UsersController {
 			if(!user) return callback(`User with email ${email} is not exist`);
 			
 			let verification = twoFactor.verifyToken(user.secret, _post.token);
-			
+
 			if(!verification || !verification.hasOwnProperty('delta') || verification.delta != 0) {
 				return callback('Incorrect token');
 			}
@@ -188,8 +188,8 @@ class UsersController {
 			user.save((err, user) => {
 				if(err) return callback(`Updating user error`);
 
-                req.user = user;
-				req.session.passport.user = user;
+                data.req.user = user;
+                data.req.session.passport.user = user;
 				
 				Controllers.authority.info(callback, data);
 			});
