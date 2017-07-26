@@ -78,7 +78,6 @@ class UsersRepository {
 			balance = balance.plus(Contracts.token.getBalance(User.generatedAddress));
 			contributeEthAmount = contributeEthAmount.plus(Contracts.crowdsale.getBalance(User.generatedAddress));
 			
-			
 			logger.info(`Recalculate balance for user ${User.email}. Old - ${User.balance}, new - ${balance.toString()}`);
 			logger.info(`Recalculate contributeEthAmount for user ${User.email}. Old - ${User.contributeEthAmount}, new - ${contributeEthAmount.toString()}`);
 			User.balance = balance.toNumber();

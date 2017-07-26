@@ -97,11 +97,12 @@ class CronController {
         ], callback);
 	}
 
-	getChangellyTx(deposit, cb){
+	getChangellyTx(deposit, cb) {
+		let self = this;
         changelly.getTransactions(20, 0, undefined, deposit, undefined, (error, data) => {
             if(error){
-                sendWarning('Get getChangellyTx error', error);
-                return setTimeout(() => this.getChangellyTx(deposit, cb), 2000);
+                // sendWarning('Get getChangellyTx error', error);
+                return setTimeout(() => self.getChangellyTx(deposit, cb), 2000);
 			}
 
             if(data.error)
