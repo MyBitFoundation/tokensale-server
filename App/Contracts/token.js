@@ -62,6 +62,7 @@ class TokenContract {
 	}
 	
 	getBalance(address) {
+		logger.info(this.contract.balanceOf(address) || 0);
 		return new BigNumber(this.contract.balanceOf(address) || 0).div(this.precision);
 	}
 }
