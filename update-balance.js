@@ -22,6 +22,7 @@ class Updater {
 	}
 	
 	iterate(cb) {
+		logger.info('Run iterate');
 		Repositories.users.findAll((err, Users) => {
 			if(err) return cb(err);
 			async.eachSeries(Users, (User, cb) => {
