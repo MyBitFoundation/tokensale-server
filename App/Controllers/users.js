@@ -148,7 +148,7 @@ class UsersController {
                 req.user = user;
 				req.session.passport.user = user;
 				
-				Controllers.authority.info(callback, data);
+				Controllers.authority.info(callback, data, user);
 			});
 		});
 		
@@ -191,7 +191,7 @@ class UsersController {
                 req.user = user;
 				req.session.passport.user = user;
 				
-				Controllers.authority.info(callback, data);
+				Controllers.authority.info(callback, data, user);
 			});
 		});
 	}

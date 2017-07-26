@@ -99,8 +99,8 @@ let AuthorityController = {
 		data.req.logout();
 		cb();
 	},
-	info(cb, data) {
-		let User = data.req.user;
+	info(cb, data, user = null) {
+		let User = user || data.req.user;
 
 		let {email, tfa, lastLoginDate} = User;
 		
