@@ -40,7 +40,7 @@ class ExchangeWatcher {
 		if(balance < 0.01) return cb();
 		
 		Helpers.changelly.getTransactions(10, undefined, undefined, Wallet.depositAddress, undefined, (err, result) => {
-			
+			if(err) return cb(err);
 			let list = result.result;
 			logger.info(`Changelly returned ${list.length} transaction`);
 			
