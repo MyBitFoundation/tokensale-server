@@ -234,7 +234,7 @@ class CronController {
 
                             let {column_names, data} = parsedData;
 
-                            if(!data.length){
+                            if(!data || !data.length){
                                 logger.warn('Get bravenewcoin error: no data');
                                 return next();
                             }
