@@ -250,9 +250,7 @@ class CronController {
                             fiatRates.push({name, rate : new BigNumber(parseFloat(rate[key]))});
                             next()
                         });
-
-
-
+	                    
                     }, (err) => {
                         callback(null, Object.assign({}, ...fiatRates.map((info) => {
                             return {[info.name]: (info.rate * tokenPrice).toFixed(6)};

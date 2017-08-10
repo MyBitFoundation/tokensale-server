@@ -112,7 +112,8 @@ class UsersController {
 				req.session.passport.user = user;
 				
 				Controllers.authority.info(callback, data);
-				Repositories.users.updateBalance(address);
+				if(needRecalculateBalance)
+					Repositories.users.updateUserBalance(user);
 			});
 		});
 	}
