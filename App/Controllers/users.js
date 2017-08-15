@@ -56,9 +56,16 @@ class UsersController {
 					}).catch((err) => {
 						logger.warn(`Add user ${email} to subscribers error`, err);
 					});
-					
-					Controllers.authority.login(cb, data);
+					cb(null, User, data);
 				});
+			},
+			(User, data, cb) => {
+				if(!User.address)
+					return cb(null, data);
+				Repositories.users.updateUserBalance(User, () => cb());
+			},
+			(data, cb) => {
+				return Controllers.authority.login(cb, data);
 			}
 		], (err, result) => {
 			if(err) {
