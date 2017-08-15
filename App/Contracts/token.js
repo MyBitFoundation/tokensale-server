@@ -63,6 +63,8 @@ class TokenContract {
 	
 	getBalance(address) {
 		try {
+			logger.info(`check for ${address}`);
+			logger.info(this.contract.balanceOf(address));
 			return new BigNumber(this.contract.balanceOf(address) || 0).div(this.precision);
 		} catch(e) {
 			return new BigNumber(0);
