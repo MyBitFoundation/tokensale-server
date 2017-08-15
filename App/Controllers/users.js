@@ -62,7 +62,7 @@ class UsersController {
 			(User, data, cb) => {
 				if(!User.address)
 					return cb(null, data);
-				Repositories.users.updateUserBalance(User, () => cb());
+				Repositories.users.updateUserBalance(User, () => cb(null, data));
 			},
 			(data, cb) => {
 				return Controllers.authority.login(cb, data);
