@@ -45,6 +45,7 @@ let APIController = {
 		APIController.addHandler('get', '/crowdsale/info', Controllers.crowdsale.getCurrentInfo, true);
 		
 		APIController.addHandler('get', '/admin/payers', Controllers.admin.printPayers, false, 'admin');
+		APIController.addHandler('get', '/admin/with-referrer', Controllers.admin.referrers, false, 'admin');
 	},
 	////////////////////////////////////////////////////////////////////////////////////////////////
 	app: {},
