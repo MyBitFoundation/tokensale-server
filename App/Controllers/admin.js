@@ -29,6 +29,7 @@ class AdminController {
 	}
 	
 	referrers(cb, data) {
+		return cb();
 		Models.users.aggregate([{
 			$graphLookup: {
 				from: 'users',
