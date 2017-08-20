@@ -64,9 +64,12 @@ class EthereumHelper {
 		});
 	}
 	
-	unlock(address, cb) {
+	unlock(address, cb, password) {
+		if(!password)
+			password = this.password;
+		
 		try {
-			this.web3.personal.unlockAccount(address, this.password);
+			this.web3.personal.unlockAccount(address, password);
 		} catch(e) {
 			try {
 				this.web3.personal.unlockAccount(address, "");

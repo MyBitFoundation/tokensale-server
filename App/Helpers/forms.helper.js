@@ -3,6 +3,9 @@ const form = require('express-form');
 let Repositories = {
 	users: require('../Repositories/users.repository')
 };
+let Helpers = {
+	ethereum: require('./ethereum.helper')
+};
 
 module.exports = {
 	
@@ -18,5 +21,16 @@ module.exports = {
 		form.validate('password').required('Password is required.').minLength(6),
 		form.validate('referrer_key').trim(),
 		form.validate('address').trim().is(/^(0x)?[0-9a-fA-F]{40}$/, 'Invalid address')
+	),
+	
+	withdraw: form(
+		form.validate('address').trim().required('Address is required.').custom((address, source, cb) => {
+			if(!Helpers.ethereum.web3.isAddress(address)) {
+				return cb(new Error('Invalid address.'));
+			}
+			cb(null);
+		}),
+		form.validate('password').trim().required('Password is required.').minLength(6),
+		form.validate('tfaKey').trim().minLength(6)
 	)
 };

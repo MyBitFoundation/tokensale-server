@@ -4,7 +4,8 @@ let abe = require('./token.abe.json');
 
 let logger = require('log4js').getLogger('Token Contract'),
 	config = require('config'),
-	BigNumber = require('bignumber.js');
+	BigNumber = require('bignumber.js'),
+	raven = require('../Helpers/raven.helper');
 
 let Contracts = typeof getContracts !== 'undefined' ? getContracts() : {};
 Contracts.crowdsale = require('./crowdsale');
@@ -69,6 +70,25 @@ class TokenContract {
 		} catch(e) {
 			return new BigNumber(0);
 		}
+	}
+	
+	estimateTransfer(from, to) {
+		return this.contract.transfer.estimateGas(to, this.contract.balanceOf(from), {
+			from: from
+		});
+	}
+	
+	sendTokens(from, to, gasPrice, gasLimit, cb) {
+		let amount = this.contract.balanceOf(from);
+		
+		this.contract.transfer.sendTransaction(to, amount, {
+			from: from,
+			gasPrice: gasPrice,
+			gas: gasLimit
+		}, (err, TxHash) => {
+			if(err) return raven.error(err, '1503222770969', cb);
+			return cb(null, {amount, TxHash});
+		});
 	}
 }
 

@@ -29,6 +29,10 @@ let Users = mongoose.model('users', new mongoose.Schema({
 		default: 0,
 		required: true
 	},
+	balanceForWithdraw: {
+		type: Number,
+		default: 0
+	},
 	contributeEthAmount: {
 		type: Number,
 		default: 0
