@@ -22,6 +22,7 @@
     "express-session": "^1.15.1",
     "extend": "^3.0.0",
     "jayson": "^2.0.3",
+    "json2xls": "^0.1.2",
     "log4js": "^1.1.0",
     "mailchimp-api-v3": "^1.7.0",
     "moment": "^2.17.1",

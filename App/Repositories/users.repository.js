@@ -1,6 +1,7 @@
 const raven = require('../Helpers/raven.helper'),
 	shortid = require('shortid'),
 	passwordHash = require('password-hash'),
+	async = require('async'),
 	BigNumber = require('bignumber.js'),
 	logger = require('log4js').getLogger('App/Repositories/users.repository');
 
@@ -66,33 +67,39 @@ class UsersRepository {
 	}
 	
 	static updateBalance(address, cb = () => {}) {
-		Models.users.findOne({
+		Models.users.find({
 			$or: [{
 				generatedAddress: address
 			}, {
 				address: address
 			}]
-		}, (err, User) => {
+		}, (err, Users) => {
 			if(err) return raven.error(err, '1500210293026', cb);
-			if(!User) return cb();
+			if(!Users.length) return cb();
 			
-			let balance = new BigNumber(0);
-			let contributeEthAmount = new BigNumber(0);
-			if(User.address && User.address != '-') {
-				balance = balance.plus(Contracts.token.getBalance(User.address));
-				contributeEthAmount = contributeEthAmount.plus(Contracts.crowdsale.getBalance(User.address));
-			}
-			balance = balance.plus(Contracts.token.getBalance(User.generatedAddress));
-			contributeEthAmount = contributeEthAmount.plus(Contracts.crowdsale.getBalance(User.generatedAddress));
-			
-			// logger.info(`Recalculate balance for user ${User.email}. Old - ${User.balance}, new - ${balance.toString()}`);
-			// logger.info(`Recalculate contributeEthAmount for user ${User.email}. Old - ${User.contributeEthAmount}, new - ${contributeEthAmount.toString()}`);
-			User.balance = balance.toNumber();
-			User.contributeEthAmount = contributeEthAmount.toNumber();
-			User.save(err => {
-				if(err) return raven.error(err, '1500211309516', cb);
-				return cb();
-			});
+			async.eachSeries(Users, (User, next) => {
+				UsersRepository.updateUserBalance(User, next);
+			}, err => cb(err));
+		});
+	}
+	
+	static updateUserBalance(User, cb = () => {}) {
+		let balance = new BigNumber(0);
+		let contributeEthAmount = new BigNumber(0);
+		if(User.address && User.address != '-') {
+			balance = balance.plus(Contracts.token.getBalance(User.address));
+			contributeEthAmount = contributeEthAmount.plus(Contracts.crowdsale.getBalance(User.address));
+		}
+		balance = balance.plus(Contracts.token.getBalance(User.generatedAddress));
+		contributeEthAmount = contributeEthAmount.plus(Contracts.crowdsale.getBalance(User.generatedAddress));
+		
+		logger.info(`Recalculate balance for user ${User.email}. Old - ${User.balance}, new - ${balance.toString()}`);
+		logger.info(`Recalculate contributeEthAmount for user ${User.email}. Old - ${User.contributeEthAmount}, new - ${contributeEthAmount.toString()}`);
+		User.balance = balance.toNumber();
+		User.contributeEthAmount = contributeEthAmount.toNumber();
+		User.save(err => {
+			if(err) return raven.error(err, '1500211309516', cb);
+			return cb();
 		});
 	}
 }

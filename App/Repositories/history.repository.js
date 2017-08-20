@@ -58,6 +58,9 @@ class HistoryRepository {
 		Models.history.find({
 			address: {
 				$in: addresses
+			},
+			amount: {
+				$gt: 0
 			}
 		}, (err, List) => {
 			if(err) return raven.error(err, '1500212453302', cb);

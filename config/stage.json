@@ -9,7 +9,11 @@
 		"rpc": "http://s.pixelplex.by:6082",
 		"firstBlockForProcessing": 1305380,
 		"rpc_enabled": true,
-		"crowdSaleContractAddress": "0xB408C5827428c6A6348AD33E21C74a1CB87D1F16"
+		"crowdSaleContractAddress": "0xB408C5827428c6A6348AD33E21C74a1CB87D1F16",
+		"master": {
+			"address": "0x257ae79de03def9e07181f073312b4f1fbb89e6f",
+			"password": "1"
+		}
 	},
 	"raven": {
 		"enabled": false

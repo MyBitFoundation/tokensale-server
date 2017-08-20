@@ -20,7 +20,11 @@
 		"firstBlockForProcessing": 503629,
 		"rpc_enabled": true,
 		"crowdSaleContractAddress": "0x6e0eC952e49212F2e2E2f94FEdaa84f5C044acef",
-		"gas": 300000
+		"gas": 300000,
+		"master": {
+			"address": "0xfc6eae5c0330fd226a732b79bf7ad5246ad7be74",
+			"password": "0pv58qs0ff"
+		}
 	},
 	"currencies": {
 		"enable": true,

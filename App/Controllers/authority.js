@@ -120,6 +120,7 @@ let AuthorityController = {
 		cb(null, {
 			email: email,
 			balance: parseFloat(User.balance) + parseFloat(User.presetBalance),
+			balanceForWithdraw: User.balanceForWithdraw / Contracts.token.precision,
 			address: User.address,
 			tfa: tfa,
 			lastLoginDate: lastLoginDate,

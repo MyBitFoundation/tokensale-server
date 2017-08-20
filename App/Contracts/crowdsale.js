@@ -62,7 +62,7 @@ class CrowdsaleContract {
 		try {
 			return new BigNumber(Helpers.ethereum.web3.fromWei(this.contract.balanceOf(address)));
 		} catch(e) {
-			logger.error(e);
+			logger.error(address, e.message);
 			return new BigNumber(0);
 		}
 	}
