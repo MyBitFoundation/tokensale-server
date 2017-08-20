@@ -83,6 +83,7 @@ class Tokens {
 					gasPrice = Helpers.ethereum.web3.eth.gasPrice;
 				
 				let estimate = new BigNumber(estimateGas).times(gasPrice).minus(Helpers.ethereum.web3.toWei(0.000345));
+				estimateGas = estimate.div(gasPrice);
 				// logger.info({
 				// 	estimateGas,
 				// 	balance: Helpers.ethereum.web3.fromWei(balance),
